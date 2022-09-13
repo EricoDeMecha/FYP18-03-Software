@@ -1,0 +1,2 @@
+# specify folders to ignore, reduce compile time
+connectivity/*

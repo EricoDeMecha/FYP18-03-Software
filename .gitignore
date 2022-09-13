@@ -1,0 +1,7 @@
+mbed-os/
+cmake_build/
+.idea/
+cmake-build-debug/
+lvgl/
+lvglDriver/
+custom_targets/
