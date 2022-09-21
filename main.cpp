@@ -7,6 +7,8 @@
 #include "ui/ui.h"
 #include "ui/ui_helpers.h"
 
+#include "src/globals.h"
+
 using rtos::Kernel::Clock;
 
 Ticker ticker_lvgl;

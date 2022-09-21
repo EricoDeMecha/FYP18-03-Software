@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.19.0 FATAL_ERROR)
 
 set(MBED_PATH ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
 set(MBED_CONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "")
-set(APP_TARGET StepperController)
+set(APP_TARGET fyp18-03)
 
 include(${MBED_PATH}/tools/cmake/app.cmake)
 
@@ -26,9 +26,10 @@ add_subdirectory(lvglDriver)
 target_include_directories(lvglDriver INTERFACE lvgl)
 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/ui/ui.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/ui/ui_helpers.c
-)
+        ${CMAKE_CURRENT_SOURCE_DIR}/ui/ui.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ui/ui_helpers.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/globals.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ServoController.cpp)
 
 add_executable(${APP_TARGET}
     main.cpp

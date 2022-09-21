@@ -1,10 +1,10 @@
 // SquareLine LVGL GENERATED FILE
 // EDITOR VERSION: SquareLine Studio 1.0.5
 // LVGL VERSION: 8.2
-// PROJECT: FYP1803
+// PROJECT: fyp18032
 
-#ifndef _FYP1803_UI_HELPERS_H
-#define _FYP1803_UI_HELPERS_H
+#ifndef _FYP18032_UI_HELPERS_H
+#define _FYP18032_UI_HELPERS_H
 
 #if __has_include("lvgl.h")
     #include "lvgl.h"
