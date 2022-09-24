@@ -6,8 +6,8 @@
 
 #include "ui/ui.h"
 #include "ui/ui_helpers.h"
+#include "globals.h"
 
-#include "src/globals.h"
 
 using rtos::Kernel::Clock;
 
@@ -28,7 +28,7 @@ void fnLvTicker()
     lv_tick_inc(5); /*Tell LittlevGL that 2 milliseconds were elapsed*/
 }
 
-typedef void (*lv_update_cb_t)(bool);// complex but okay
+typedef void (*lv_update_cb_t)(bool);
 
 [[maybe_unused]] static void lv_screen_update(lv_timer_t* timer)
 {
@@ -71,12 +71,11 @@ int main(){
     ui_init();
 
     lvgl_thread.start(lvglThreadFn);
-
-     // simple main loop, should handle event;
     while(1) {
         // blink LEDs for decor
         led1 = !led1;
         led2 = !led2;
+        // Sensors
         ThisThread::sleep_for(200ms);
     }
 

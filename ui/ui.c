@@ -375,7 +375,6 @@ void ui_Home_screen_init(void)
     lv_obj_set_y(ui_TemperatureValueLabel, 41);
 
     lv_obj_set_align(ui_TemperatureValueLabel, LV_ALIGN_CENTER);
-
     lv_label_set_text(ui_TemperatureValueLabel, "22");
 
     // ui_WeightValueLabel
