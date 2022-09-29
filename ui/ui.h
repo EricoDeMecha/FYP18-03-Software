@@ -3,8 +3,8 @@
 // LVGL VERSION: 8.2
 // PROJECT: fyp18032
 
-#ifndef _FYP18032_UI_H
-#define _FYP18032_UI_H
+#ifndef FYP18032_UI_H
+#define FYP18032_UI_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,7 +15,7 @@ extern "C" {
 #else
 #include "lvgl/lvgl.h"
 #endif
-
+    /*END OF USER VARIABLES*/
 extern lv_obj_t * ui_Home;
 extern lv_obj_t * ui_ValveArc;
 extern lv_obj_t * ui_ValveLabel;

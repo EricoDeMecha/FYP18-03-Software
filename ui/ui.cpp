@@ -5,6 +5,14 @@
 
 #include "ui.h"
 #include "ui_helpers.h"
+#include "../src/globals.h"
+
+///////////////////// USER DEFINED VARIABLES ////////////////////
+static bool switch_val = true;
+static int servo_pos = 0;
+
+///////////////////// USER DECLARED FUNCTIONS ////////////////////
+static void data_update_task();
 
 ///////////////////// VARIABLES ////////////////////
 lv_obj_t * ui_Home;
@@ -60,6 +68,19 @@ lv_obj_t * ui_DegreesSymbolLabel2;
 #if LV_COLOR_16_SWAP !=0
     #error "#error LV_COLOR_16_SWAP should be 0 to match SquareLine Studio's settings"
 #endif
+///////////////////// USER DEFINED FUNCTIONS ////////////////////
+
+static void data_update_task(){
+    if(ds18b20.isPresent()){
+        ds18b20.startConversion();
+        float current_temperature = ds18b20.read();
+        lv_label_set_text_fmt(ui_TemperatureValueLabel, "%.2f", current_temperature);
+    }
+   if(hx711.isReady()){
+        float current_weight  = hx711.read();
+        lv_label_set_text_fmt(ui_WeightValueLabel, "%.2f", current_weight);
+    }
+}
 
 ///////////////////// ANIMATIONS ////////////////////
 
@@ -70,6 +91,8 @@ static void ui_event_ValveArc(lv_event_t * e)
     lv_obj_t * ta = lv_event_get_target(e);
     if(event == LV_EVENT_VALUE_CHANGED) {
         _ui_arc_set_text_value(ui_ValveArcValueLabel, ta, "", "");
+        servo_pos = (int)lv_arc_get_value(ta);
+        appController.servo_position(servo, servo_pos);
     }
 }
 static void ui_event_NextButton(lv_event_t * e)
@@ -122,7 +145,10 @@ static void ui_event_BackButton(lv_event_t * e)
         _ui_screen_change(ui_Home, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 500, 0);
     }
 }
-
+static void ui_event_DiverterSwitch(lv_event_t* e){
+    switch_val = !switch_val;
+    appController.lat8_operate(laT8, switch_val);
+}
 ///////////////////// SCREENS ////////////////////
 void ui_Home_screen_init(void)
 {
@@ -190,6 +216,7 @@ void ui_Home_screen_init(void)
 
     lv_obj_set_align(ui_DiverterSwitch, LV_ALIGN_CENTER);
 
+    lv_obj_add_event_cb(ui_DiverterSwitch, ui_event_DiverterSwitch, LV_EVENT_VALUE_CHANGED, NULL);
     // ui_TemperatureHeaderLabel
 
     ui_TemperatureHeaderLabel = lv_label_create(ui_Home);
@@ -371,7 +398,7 @@ void ui_Home_screen_init(void)
     lv_obj_set_width(ui_TemperatureValueLabel, LV_SIZE_CONTENT);
     lv_obj_set_height(ui_TemperatureValueLabel, LV_SIZE_CONTENT);
 
-    lv_obj_set_x(ui_TemperatureValueLabel, 29);
+    lv_obj_set_x(ui_TemperatureValueLabel, 26);
     lv_obj_set_y(ui_TemperatureValueLabel, 41);
 
     lv_obj_set_align(ui_TemperatureValueLabel, LV_ALIGN_CENTER);
@@ -774,6 +801,8 @@ void ui_init(void)
     lv_disp_set_theme(dispp, theme);
     ui_Home_screen_init();
     ui_Screen1_screen_init();
+//    lv_timer_create(data_update_task, 200,  NULL);
+    ui_Home->user_data = (void*) data_update_task;
     lv_disp_load_scr(ui_Home);
 }
 

@@ -94,5 +94,4 @@ void _ui_slider_set_text_value(lv_obj_t * trg, lv_obj_t * src, char * prefix, ch
 
 void _ui_checked_set_text_value(lv_obj_t * trg, lv_obj_t * src, char * txt_on, char * txt_off);
 
-
 #endif

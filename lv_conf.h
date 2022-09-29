@@ -79,8 +79,8 @@
  *It removes the need to manually update the tick with `lv_tick_inc()`)*/
 #define LV_TICK_CUSTOM     0
 #if LV_TICK_CUSTOM
-#define LV_TICK_CUSTOM_INCLUDE  "Arduino.h"         /*Header for the system time function*/
-#define LV_TICK_CUSTOM_SYS_TIME_EXPR (millis())     /*Expression evaluating to current system time in ms*/
+#define LV_TICK_CUSTOM_INCLUDE  "kernel.h"         /*Header for the system time function*/
+#define LV_TICK_CUSTOM_SYS_TIME_EXPR (k_uptime_get_32())     /*Expression evaluating to current system time in ms*/
 #endif   /*LV_TICK_CUSTOM*/
 
 /*Default Dot Per Inch. Used to initialize default sizes such as widgets sized, style paddings.
@@ -238,7 +238,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #  define lv_snprintf     snprintf
 #  define lv_vsnprintf    vsnprintf
 #else   /*LV_SPRINTF_CUSTOM*/
-#  define LV_SPRINTF_USE_FLOAT 0
+#  define LV_SPRINTF_USE_FLOAT 1
 #endif  /*LV_SPRINTF_CUSTOM*/
 
 #define LV_USE_USER_DATA      1
@@ -434,7 +434,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 #define LV_USE_LINE         1
 
-#define LV_USE_ROLLER       0   /*Requires: lv_label*/
+#define LV_USE_ROLLER       1   /*Requires: lv_label*/
 #if LV_USE_ROLLER
 #  define LV_ROLLER_INF_PAGES       7   /*Number of extra "pages" when the roller is infinite*/
 #endif

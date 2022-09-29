@@ -10,11 +10,7 @@
 class LA_T8 {
 public:
     LA_T8(PinName in1, PinName in2);
-    bool isConnected();
-    void off();
-    void eject();
-    void retract();
-    ~LA_T8() = default;
+    void operate(bool switch_val);
 private:
     DigitalOut _in1;
     DigitalOut _in2;
