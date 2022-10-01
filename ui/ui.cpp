@@ -10,10 +10,12 @@
 ///////////////////// USER DEFINED VARIABLES ////////////////////
 static bool switch_val = true;
 static int servo_pos = 0;
+static float t_steps;
+static int n_steps;
 
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
-static void data_update_task();
-
+static void home_update_task();
+static void screen1_update_task();
 ///////////////////// VARIABLES ////////////////////
 lv_obj_t * ui_Home;
 lv_obj_t * ui_ValveArc;
@@ -70,7 +72,7 @@ lv_obj_t * ui_DegreesSymbolLabel2;
 #endif
 ///////////////////// USER DEFINED FUNCTIONS ////////////////////
 
-static void data_update_task(){
+static void home_update_task(){
     if(ds18b20.isPresent()){
         ds18b20.startConversion();
         float current_temperature = ds18b20.read();
@@ -82,6 +84,9 @@ static void data_update_task(){
     }
 }
 
+static void screen1_update_task(){
+    // update the labels with data from the experiment
+}
 ///////////////////// ANIMATIONS ////////////////////
 
 ///////////////////// FUNCTIONS ////////////////////
@@ -118,6 +123,9 @@ static void ui_event_StartButton(lv_event_t * e)
     if(event == LV_EVENT_CLICKED) {
         _ui_state_modify(ui_TimeSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
         _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
+        n_steps = (int) lv_slider_get_value(ui_StepsSlider);
+        t_steps = (float) lv_slider_get_value(ui_TimeSlider);
+        appController.start_experiment(servo, laT8, ds18b20, hx711, n_steps, t_steps);
     }
 }
 static void ui_event_StopButton(lv_event_t * e)
@@ -802,7 +810,8 @@ void ui_init(void)
     ui_Home_screen_init();
     ui_Screen1_screen_init();
 //    lv_timer_create(data_update_task, 200,  NULL);
-    ui_Home->user_data = (void*) data_update_task;
+    ui_Home->user_data = (void*) home_update_task;
+    ui_Screen1->user_data = (void*) screen1_update_task;
     lv_disp_load_scr(ui_Home);
 }
 
