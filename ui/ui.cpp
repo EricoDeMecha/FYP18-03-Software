@@ -7,15 +7,6 @@
 #include "ui_helpers.h"
 #include "../src/globals.h"
 
-///////////////////// USER DEFINED VARIABLES ////////////////////
-static bool switch_val = true;
-static int servo_pos = 0;
-static float t_steps;
-static int n_steps;
-
-///////////////////// USER DECLARED FUNCTIONS ////////////////////
-static void home_update_task();
-static void screen1_update_task();
 ///////////////////// VARIABLES ////////////////////
 lv_obj_t * ui_Home;
 lv_obj_t * ui_ValveArc;
@@ -70,22 +61,42 @@ lv_obj_t * ui_DegreesSymbolLabel2;
 #if LV_COLOR_16_SWAP !=0
     #error "#error LV_COLOR_16_SWAP should be 0 to match SquareLine Studio's settings"
 #endif
-///////////////////// USER DEFINED FUNCTIONS ////////////////////
 
+///////////////////// USER DEFINED VARIABLES ////////////////////
+
+static int n_steps = 0;
+static float t_steps = 0.0f;
+static bool switched = true;
+
+///////////////////// USER DECLARED FUNCTIONS ////////////////////
+static void home_update_task();
+static void screen1_update_task();
+///////////////////// USER DEFINED FUNCTIONS ////////////////////
 static void home_update_task(){
-    if(ds18b20.isPresent()){
-        ds18b20.startConversion();
-        float current_temperature = ds18b20.read();
-        lv_label_set_text_fmt(ui_TemperatureValueLabel, "%.2f", current_temperature);
+    appController.queue_temp(ds18b20);
+    if(appController.get_temp_flag()){
+        lv_label_set_text_fmt(ui_TemperatureValueLabel, "%.2f", appController.get_current_temperature());
+        appController.set_temp_flag(false);
     }
-   if(hx711.isReady()){
-        float current_weight  = hx711.read();
-        lv_label_set_text_fmt(ui_WeightValueLabel, "%.2f", current_weight);
+    appController.queue_weight(hx711);
+    if(appController.get_weight_flag()){
+        lv_label_set_text_fmt(ui_WeightValueLabel, "%.2f", appController.get_current_weight());
+        appController.set_weight_flag(false);
     }
 }
 
 static void screen1_update_task(){
-    // update the labels with data from the experiment
+    // n_steps and t_steps are set now
+    if(appController.get_weight_flag()){
+        lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", appController.get_current_weight());
+        appController.set_weight_flag(false);
+        // increment the step
+        lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", appController.get_current_step());
+    }
+    if(appController.get_temp_flag()){
+        lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", appController.get_current_temperature());
+        appController.set_temp_flag(false);
+    }
 }
 ///////////////////// ANIMATIONS ////////////////////
 
@@ -96,8 +107,7 @@ static void ui_event_ValveArc(lv_event_t * e)
     lv_obj_t * ta = lv_event_get_target(e);
     if(event == LV_EVENT_VALUE_CHANGED) {
         _ui_arc_set_text_value(ui_ValveArcValueLabel, ta, "", "");
-        servo_pos = (int)lv_arc_get_value(ta);
-        appController.servo_position(servo, servo_pos);
+        appController.servo_position(servo, (int)lv_arc_get_value(ta));
     }
 }
 static void ui_event_NextButton(lv_event_t * e)
@@ -125,7 +135,8 @@ static void ui_event_StartButton(lv_event_t * e)
         _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
         n_steps = (int) lv_slider_get_value(ui_StepsSlider);
         t_steps = (float) lv_slider_get_value(ui_TimeSlider);
-        appController.start_experiment(servo, laT8, ds18b20, hx711, n_steps, t_steps);
+        appController.fill_up_param_vecs(n_steps, t_steps);
+        lv_label_set_text(ui_StatusLabel, "Experiment started");
     }
 }
 static void ui_event_StopButton(lv_event_t * e)
@@ -135,6 +146,7 @@ static void ui_event_StopButton(lv_event_t * e)
     if(event == LV_EVENT_CLICKED) {
         _ui_state_modify(ui_TimeSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
         _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
+        // retrieve the controller to origin position
     }
 }
 static void ui_event_TimeSlider(lv_event_t * e)
@@ -154,8 +166,8 @@ static void ui_event_BackButton(lv_event_t * e)
     }
 }
 static void ui_event_DiverterSwitch(lv_event_t* e){
-    switch_val = !switch_val;
-    appController.lat8_operate(laT8, switch_val);
+    switched = !switched;
+    appController.lat8_operate(laT8, switched);
 }
 ///////////////////// SCREENS ////////////////////
 void ui_Home_screen_init(void)
