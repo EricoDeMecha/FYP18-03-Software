@@ -13,7 +13,7 @@
 #include <algorithm>
 
 #define FULL_VALVE_TURN 90.0
-#define T_STEPS_INC 7.5
+#define T_MIN 5 // minimum time step
 #define ToMs(X) (X*1000)
 
 class AppController {
@@ -39,8 +39,10 @@ public:
     bool get_weight_flag() const { return is_weight_set; }
     bool get_temp_flag() const { return is_temp_set; }
     // experiment
-    void fill_up_param_vecs(int& n_steps,float& t_steps);
+    void fill_up_param_vecs(int& n_steps,int& t_steps);
     int get_current_step() const { return current_step; }
+    void next_step(Servo& servo , DS1820& ds18b20, LA_T8& laT8, HX711& hx711);
+    void stop_experiment(Servo& servo, LA_T8& laT8);
     ~AppController()=default;
 private:
     Thread appThread;
@@ -51,13 +53,13 @@ private:
     // ds18b20
     void read_temperature(DS1820& ds18b20);
 private:
-    bool is_weight_set;
-    bool is_temp_set;
-    std::vector<float> servo_angles;
-    std::vector<float> vec_t_steps;
-    float current_weight;
-    float current_temperature;
-    int current_step;
+    bool is_weight_set{};
+    bool is_temp_set{};
+    std::vector<int> servo_angles;
+    std::vector<int> vec_t_steps;
+    float current_weight{};
+    float current_temperature{};
+    int current_step{};
 };
 
 

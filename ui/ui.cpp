@@ -40,7 +40,6 @@ lv_obj_t * ui_StartButton;
 lv_obj_t * ui_StartButtonTextLabel;
 lv_obj_t * ui_StopButton;
 lv_obj_t * ui_StopButtonLabel;
-lv_obj_t * ui_StatusLabel;
 lv_obj_t * ui_TemperatureLabel2;
 lv_obj_t * ui_WeightLabel;
 lv_obj_t * ui_StepNoLabel;
@@ -53,7 +52,8 @@ lv_obj_t * ui_SecondsSymbolValueLabel;
 lv_obj_t * ui_StepNoValueLabel;
 lv_obj_t * ui_kgSymbolLabel;
 lv_obj_t * ui_DegreesSymbolLabel2;
-
+lv_obj_t * ui_NextStepButton;
+lv_obj_t * ui_NextStepButtonLabel;
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
     #error "LV_COLOR_DEPTH should be 16bit to match SquareLine Studio's settings"
@@ -63,15 +63,15 @@ lv_obj_t * ui_DegreesSymbolLabel2;
 #endif
 
 ///////////////////// USER DEFINED VARIABLES ////////////////////
-
 static int n_steps = 0;
-static float t_steps = 0.0f;
+static int t_steps = 0;
 static bool switched = true;
 
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
 static void home_update_task();
 static void screen1_update_task();
 ///////////////////// USER DEFINED FUNCTIONS ////////////////////
+
 static void home_update_task(){
     appController.queue_temp(ds18b20);
     if(appController.get_temp_flag()){
@@ -98,6 +98,7 @@ static void screen1_update_task(){
         appController.set_temp_flag(false);
     }
 }
+
 ///////////////////// ANIMATIONS ////////////////////
 
 ///////////////////// FUNCTIONS ////////////////////
@@ -131,12 +132,16 @@ static void ui_event_StartButton(lv_event_t * e)
     lv_event_code_t event = lv_event_get_code(e);
     lv_obj_t * ta = lv_event_get_target(e);
     if(event == LV_EVENT_CLICKED) {
-        _ui_state_modify(ui_TimeSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
-        _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
+        _ui_state_modify(ui_TimeSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_ADD);
+        _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_ADD);
         n_steps = (int) lv_slider_get_value(ui_StepsSlider);
-        t_steps = (float) lv_slider_get_value(ui_TimeSlider);
+        t_steps = (int) lv_slider_get_value(ui_TimeSlider);
         appController.fill_up_param_vecs(n_steps, t_steps);
-        lv_label_set_text(ui_StatusLabel, "Experiment started");
+        // start experiment - home  the actuators
+        appController.servo_position(servo, 0);
+        appController.lat8_operate(laT8, false);
+        // disable home screen button
+        _ui_state_modify(ui_BackButton, LV_STATE_DISABLED, _UI_MODIFY_FLAG_ADD);
     }
 }
 static void ui_event_StopButton(lv_event_t * e)
@@ -144,9 +149,13 @@ static void ui_event_StopButton(lv_event_t * e)
     lv_event_code_t event = lv_event_get_code(e);
     lv_obj_t * ta = lv_event_get_target(e);
     if(event == LV_EVENT_CLICKED) {
-        _ui_state_modify(ui_TimeSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
-        _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_TOGGLE);
-        // retrieve the controller to origin position
+        _ui_state_modify(ui_TimeSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_REMOVE);
+        _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_REMOVE);
+        appController.stop_experiment(servo, laT8);
+        _ui_state_modify(ui_BackButton, LV_STATE_DISABLED, _UI_MODIFY_FLAG_REMOVE);
+        lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", 0.00f);
+        lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", 0);
+        lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", 0.00f);
     }
 }
 static void ui_event_TimeSlider(lv_event_t * e)
@@ -168,6 +177,13 @@ static void ui_event_BackButton(lv_event_t * e)
 static void ui_event_DiverterSwitch(lv_event_t* e){
     switched = !switched;
     appController.lat8_operate(laT8, switched);
+}
+
+static void ui_event_NextStepButton(lv_event_t* e){
+    lv_event_code_t event = lv_event_get_code(e);
+    if(event == LV_EVENT_CLICKED){
+        appController.next_step(servo, ds18b20, laT8, hx711);
+    }
 }
 ///////////////////// SCREENS ////////////////////
 void ui_Home_screen_init(void)
@@ -625,20 +641,6 @@ void ui_Screen1_screen_init(void)
 
     lv_label_set_text(ui_StopButtonLabel, "Stop");
 
-    // ui_StatusLabel
-
-    ui_StatusLabel = lv_label_create(ui_Screen1);
-
-    lv_obj_set_width(ui_StatusLabel, LV_SIZE_CONTENT);
-    lv_obj_set_height(ui_StatusLabel, LV_SIZE_CONTENT);
-
-    lv_obj_set_x(ui_StatusLabel, -2);
-    lv_obj_set_y(ui_StatusLabel, 106);
-
-    lv_obj_set_align(ui_StatusLabel, LV_ALIGN_CENTER);
-
-    lv_label_set_text(ui_StatusLabel, "Status");
-
     // ui_TemperatureLabel2
 
     ui_TemperatureLabel2 = lv_label_create(ui_Screen1);
@@ -755,6 +757,35 @@ void ui_Screen1_screen_init(void)
 
     lv_label_set_text(ui_BackButtonLabel, "Back");
 
+    // ui_NextStepButton
+    ui_NextStepButton = lv_btn_create(ui_Screen1);
+
+    lv_obj_set_width(ui_NextStepButton, 100);
+    lv_obj_set_height(ui_NextStepButton, 25);
+
+    lv_obj_set_x(ui_NextStepButton,  100);
+    lv_obj_set_y(ui_NextStepButton, 102);
+
+    lv_obj_set_align(ui_NextStepButton, LV_ALIGN_CENTER);
+
+    lv_obj_add_flag(ui_NextStepButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_NextStepButton, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_add_event_cb(ui_NextStepButton, ui_event_NextStepButton, LV_EVENT_ALL, NULL);
+
+    // ui_NextButtonLabel
+
+    ui_NextStepButtonLabel = lv_label_create(ui_NextStepButton);
+
+    lv_obj_set_width(ui_NextStepButtonLabel, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_NextStepButtonLabel, LV_SIZE_CONTENT);
+
+    lv_obj_set_x(ui_NextStepButtonLabel, 0);
+    lv_obj_set_y(ui_NextStepButtonLabel, -1);
+
+    lv_obj_set_align(ui_NextStepButtonLabel, LV_ALIGN_CENTER);
+
+    lv_label_set_text(ui_NextStepButtonLabel, "Next Step");
     // ui_SecondsSymbolValueLabel
 
     ui_SecondsSymbolValueLabel = lv_label_create(ui_Screen1);
@@ -821,7 +852,6 @@ void ui_init(void)
     lv_disp_set_theme(dispp, theme);
     ui_Home_screen_init();
     ui_Screen1_screen_init();
-//    lv_timer_create(data_update_task, 200,  NULL);
     ui_Home->user_data = (void*) home_update_task;
     ui_Screen1->user_data = (void*) screen1_update_task;
     lv_disp_load_scr(ui_Home);
