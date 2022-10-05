@@ -11,11 +11,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        target: [STM32F407VE_BLACK]
-        profile: [release, debug, develop]
-
+    env:
+      target: STM32F407VE_BLACK
+      profile: release
 
     steps:
       -
@@ -27,4 +25,13 @@ jobs:
         run: |
           set -e
           mbed-tools deploy
-          mbed-tools compile -t GCC_ARM -m ${{ matrix.target }} --profile ${{ matrix.profile }}
+          mbed-tools compile -t GCC_ARM -m ${{ env.target }} --profile ${{ env.profile }}
+      -
+        name: create_release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+            repo_token: "${{ secrets.GITHUB_TOKEN }}"
+            automatic_release_tag: "latest"
+            prerelease: true
+            title: "Releases"
+            file: cmake_build/${{ env.target }}/${{ env.profile }}/GCC_ARM/fyp18-03.bin
