@@ -66,34 +66,38 @@ lv_obj_t * ui_NextStepButtonLabel;
 static int n_steps = 0;
 static int t_steps = 0;
 static bool switched = true;
-
+static bool is_home_screen= true;
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
 static void home_update_task();
 static void screen1_update_task();
 ///////////////////// USER DEFINED FUNCTIONS ////////////////////
 
 static void home_update_task(){
-    appController.queue_temp(ds18b20);
-    if(appController.get_temp_flag()){
-        lv_label_set_text_fmt(ui_TemperatureValueLabel, "%.2f", appController.get_current_temperature());
-        appController.set_temp_flag(false);
-    }
-    appController.queue_weight(hx711);
-    if(appController.get_weight_flag()){
-        lv_label_set_text_fmt(ui_WeightValueLabel, "%.2f", appController.get_current_weight());
-        appController.set_weight_flag(false);
+    if(is_home_screen){
+        appController.queue_temp(ds18b20);
+        if(appController.get_temp_flag()){
+            lv_label_set_text_fmt(ui_TemperatureValueLabel, "%.2f", appController.get_current_temperature());
+            appController.set_temp_flag(false);
+        }
+        appController.queue_weight(hx711);
+        if(appController.get_weight_flag()){
+            lv_label_set_text_fmt(ui_WeightValueLabel, "%.2f", appController.get_current_weight());
+            appController.set_weight_flag(false);
+        }
     }
 }
 
 static void screen1_update_task(){
     // n_steps and t_steps are set now
     if(appController.get_weight_flag()){
+//        current_weight = hx711.read();
         lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", appController.get_current_weight());
         appController.set_weight_flag(false);
         // increment the step
         lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", appController.get_current_step());
     }
     if(appController.get_temp_flag()){
+//        current_temperature = ds18b20.read();
         lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", appController.get_current_temperature());
         appController.set_temp_flag(false);
     }
@@ -117,6 +121,7 @@ static void ui_event_NextButton(lv_event_t * e)
     lv_obj_t * ta = lv_event_get_target(e);
     if(event == LV_EVENT_CLICKED) {
         _ui_screen_change(ui_Screen1, LV_SCR_LOAD_ANIM_MOVE_LEFT, 500, 0);
+        is_home_screen = false;
     }
 }
 static void ui_event_StepsSlider(lv_event_t * e)
@@ -172,6 +177,7 @@ static void ui_event_BackButton(lv_event_t * e)
     lv_obj_t * ta = lv_event_get_target(e);
     if(event == LV_EVENT_CLICKED) {
         _ui_screen_change(ui_Home, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 500, 0);
+        is_home_screen = true;
     }
 }
 static void ui_event_DiverterSwitch(lv_event_t* e){
