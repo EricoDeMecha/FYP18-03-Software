@@ -32,6 +32,7 @@ jobs:
         with:
             repo_token: "${{ secrets.GITHUB_TOKEN }}"
             automatic_release_tag: "latest"
-            prerelease: true
+            prerelease: false
             title: "Releases"
-            file: cmake_build/${{ env.target }}/${{ env.profile }}/GCC_ARM/fyp18-03.bin
+            files: |
+                cmake_build/${{ env.target }}/${{ env.profile }}/GCC_ARM/fyp18-03.bin
