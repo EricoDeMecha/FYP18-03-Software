@@ -47,7 +47,7 @@ extern lv_obj_t * ui_TimeValueLabel;
 extern lv_obj_t * ui_StartButton;
 extern lv_obj_t * ui_StartButtonTextLabel;
 extern lv_obj_t * ui_StopButton;
-extern lv_obj_t * ui_StopButtonLabel;
+extern lv_obj_t * ui_ResetButtonLabel;
 extern lv_obj_t * ui_TemperatureLabel2;
 extern lv_obj_t * ui_WeightLabel;
 extern lv_obj_t * ui_StepNoLabel;

@@ -39,7 +39,7 @@ lv_obj_t * ui_TimeValueLabel;
 lv_obj_t * ui_StartButton;
 lv_obj_t * ui_StartButtonTextLabel;
 lv_obj_t * ui_StopButton;
-lv_obj_t * ui_StopButtonLabel;
+lv_obj_t * ui_ResetButtonLabel;
 lv_obj_t * ui_TemperatureLabel2;
 lv_obj_t * ui_WeightLabel;
 lv_obj_t * ui_StepNoLabel;
@@ -90,14 +90,12 @@ static void home_update_task(){
 static void screen1_update_task(){
     // n_steps and t_steps are set now
     if(appController.get_weight_flag()){
-//        current_weight = hx711.read();
         lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", appController.get_current_weight());
         appController.set_weight_flag(false);
         // increment the step
         lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", appController.get_current_step());
     }
     if(appController.get_temp_flag()){
-//        current_temperature = ds18b20.read();
         lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", appController.get_current_temperature());
         appController.set_temp_flag(false);
     }
@@ -149,7 +147,7 @@ static void ui_event_StartButton(lv_event_t * e)
         _ui_state_modify(ui_BackButton, LV_STATE_DISABLED, _UI_MODIFY_FLAG_ADD);
     }
 }
-static void ui_event_StopButton(lv_event_t * e)
+static void ui_event_ResetButton(lv_event_t * e)
 {
     lv_event_code_t event = lv_event_get_code(e);
     lv_obj_t * ta = lv_event_get_target(e);
@@ -158,9 +156,11 @@ static void ui_event_StopButton(lv_event_t * e)
         _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_REMOVE);
         appController.stop_experiment(servo, laT8);
         _ui_state_modify(ui_BackButton, LV_STATE_DISABLED, _UI_MODIFY_FLAG_REMOVE);
-        lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", 0.00f);
+        lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", 0.00);
         lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", 0);
-        lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", 0.00f);
+        lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", 0.00);
+        _ui_slider_set_property(ui_StepsSlider, _UI_SLIDER_PROPERTY_VALUE_WITH_ANIM, 0);
+        _ui_slider_set_property(ui_TimeSlider, _UI_SLIDER_PROPERTY_VALUE_WITH_ANIM, 0);
     }
 }
 static void ui_event_TimeSlider(lv_event_t * e)
@@ -191,6 +191,23 @@ static void ui_event_NextStepButton(lv_event_t* e){
         appController.next_step(servo, ds18b20, laT8, hx711);
     }
 }
+
+static void ui_event_TemperatureRebaseButton(lv_event_t* e){
+    lv_event_code_t event = lv_event_get_code(e);
+    if(event == LV_EVENT_CLICKED){
+        lv_label_set_text_fmt(ui_TemperatureValueLabel, "%.2f", 0.00);
+        appController.set_current_temperature(0.0f);
+    }
+}
+
+static void ui_event_WeightRebaseButton(lv_event_t* e){
+    lv_event_code_t  event = lv_event_get_code(e);
+    if(event == LV_EVENT_CLICKED){
+        lv_label_set_text_fmt(ui_WeightValueLabel, "%.2f",0.00);
+        appController.set_current_weight(0.0f);
+    }
+}
+
 ///////////////////// SCREENS ////////////////////
 void ui_Home_screen_init(void)
 {
@@ -302,6 +319,7 @@ void ui_Home_screen_init(void)
     lv_obj_add_flag(ui_TemperatureRebaseButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_clear_flag(ui_TemperatureRebaseButton, LV_OBJ_FLAG_SCROLLABLE);
 
+    lv_obj_add_event_cb(ui_TemperatureRebaseButton, ui_event_TemperatureRebaseButton, LV_EVENT_ALL, NULL);
     // ui_TemperatureRebaseLabel
 
     ui_TemperatureRebaseLabel = lv_label_create(ui_TemperatureRebaseButton);
@@ -345,6 +363,7 @@ void ui_Home_screen_init(void)
 
     lv_label_set_text(ui_WeightRebaseLabel, "Rebase");
 
+    lv_obj_add_event_cb(ui_WeightRebaseButton, ui_event_WeightRebaseButton, LV_EVENT_ALL, NULL);
     // ui_WeightHeaderLabel
 
     ui_WeightHeaderLabel = lv_label_create(ui_Home);
@@ -444,7 +463,7 @@ void ui_Home_screen_init(void)
     lv_obj_set_y(ui_TemperatureValueLabel, 41);
 
     lv_obj_set_align(ui_TemperatureValueLabel, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_TemperatureValueLabel, "22");
+    lv_label_set_text(ui_TemperatureValueLabel, "0.00");
 
     // ui_WeightValueLabel
 
@@ -458,7 +477,7 @@ void ui_Home_screen_init(void)
 
     lv_obj_set_align(ui_WeightValueLabel, LV_ALIGN_CENTER);
 
-    lv_label_set_text(ui_WeightValueLabel, "50");
+    lv_label_set_text(ui_WeightValueLabel, "0.00");
 
     // ui_ValveArcValueLabel
 
@@ -631,21 +650,21 @@ void ui_Screen1_screen_init(void)
     lv_obj_add_flag(ui_StopButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_clear_flag(ui_StopButton, LV_OBJ_FLAG_SCROLLABLE);
 
-    lv_obj_add_event_cb(ui_StopButton, ui_event_StopButton, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_StopButton, ui_event_ResetButton, LV_EVENT_ALL, NULL);
 
-    // ui_StopButtonLabel
+    // ui_ResetButtonLabel
 
-    ui_StopButtonLabel = lv_label_create(ui_StopButton);
+    ui_ResetButtonLabel = lv_label_create(ui_StopButton);
 
-    lv_obj_set_width(ui_StopButtonLabel, LV_SIZE_CONTENT);
-    lv_obj_set_height(ui_StopButtonLabel, LV_SIZE_CONTENT);
+    lv_obj_set_width(ui_ResetButtonLabel, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_ResetButtonLabel, LV_SIZE_CONTENT);
 
-    lv_obj_set_x(ui_StopButtonLabel, 0);
-    lv_obj_set_y(ui_StopButtonLabel, -1);
+    lv_obj_set_x(ui_ResetButtonLabel, 0);
+    lv_obj_set_y(ui_ResetButtonLabel, -1);
 
-    lv_obj_set_align(ui_StopButtonLabel, LV_ALIGN_CENTER);
+    lv_obj_set_align(ui_ResetButtonLabel, LV_ALIGN_CENTER);
 
-    lv_label_set_text(ui_StopButtonLabel, "Stop");
+    lv_label_set_text(ui_ResetButtonLabel, "Reset");
 
     // ui_TemperatureLabel2
 
