@@ -82,7 +82,10 @@ void AppController::next_step(Servo &servo, DS1820 &ds18b20, LA_T8 &laT8, HX711 
         return;
     }
     servo_position(servo, servo_angles.at(current_step));
-    chrono::milliseconds t_eject = chrono::milliseconds(vec_t_steps.at(current_step));
+    // current time
+    current_time = vec_t_steps.at(current_step);
+    // delay
+    chrono::milliseconds t_eject = chrono::milliseconds(current_time);
     lat8_eject_t(laT8, t_eject);
     // read the temperature
     queue_temp(ds18b20);

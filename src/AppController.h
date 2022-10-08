@@ -45,6 +45,7 @@ public:
     int get_current_step() const { return current_step; }
     void next_step(Servo& servo , DS1820& ds18b20, LA_T8& laT8, HX711& hx711);
     void stop_experiment(Servo& servo, LA_T8& laT8);
+    int get_current_time() const { return current_time; }
     ~AppController()=default;
 private:
     Thread appThread;
@@ -62,6 +63,7 @@ private:
     float current_weight{};
     float current_temperature{};
     int current_step{};
+    int current_time{};
 };
 
 

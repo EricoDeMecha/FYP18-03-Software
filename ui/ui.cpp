@@ -54,6 +54,9 @@ lv_obj_t * ui_kgSymbolLabel;
 lv_obj_t * ui_DegreesSymbolLabel2;
 lv_obj_t * ui_NextStepButton;
 lv_obj_t * ui_NextStepButtonLabel;
+lv_obj_t * ui_TimeCountDownLabel;
+lv_obj_t * ui_TimeCountDownValueLabel;
+
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
     #error "LV_COLOR_DEPTH should be 16bit to match SquareLine Studio's settings"
@@ -67,6 +70,7 @@ static int n_steps = 0;
 static int t_steps = 0;
 static bool switched = true;
 static bool is_home_screen= true;
+static int current_time  = 0;
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
 static void home_update_task();
 static void screen1_update_task();
@@ -88,6 +92,8 @@ static void home_update_task(){
 }
 
 static void screen1_update_task(){
+    // update the time countdown label
+    lv_label_set_text_fmt(ui_TimeCountDownValueLabel, "%d s", (current_time < 0 ? 0: ((current_time--)/1000)));
     // n_steps and t_steps are set now
     if(appController.get_weight_flag()){
         lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", appController.get_current_weight());
@@ -141,7 +147,7 @@ static void ui_event_StartButton(lv_event_t * e)
         t_steps = (int) lv_slider_get_value(ui_TimeSlider);
         appController.fill_up_param_vecs(n_steps, t_steps);
         // start experiment - home  the actuators
-        appController.servo_position(servo, 0);
+//        appController.servo_position(servo, 0);
         appController.lat8_operate(laT8, false);
         // disable home screen button
         _ui_state_modify(ui_BackButton, LV_STATE_DISABLED, _UI_MODIFY_FLAG_ADD);
@@ -189,6 +195,7 @@ static void ui_event_NextStepButton(lv_event_t* e){
     lv_event_code_t event = lv_event_get_code(e);
     if(event == LV_EVENT_CLICKED){
         appController.next_step(servo, ds18b20, laT8, hx711);
+        current_time = appController.get_current_time();
     }
 }
 
@@ -196,7 +203,6 @@ static void ui_event_TemperatureRebaseButton(lv_event_t* e){
     lv_event_code_t event = lv_event_get_code(e);
     if(event == LV_EVENT_CLICKED){
         lv_label_set_text_fmt(ui_TemperatureValueLabel, "%.2f", 0.00);
-        appController.set_current_temperature(0.0f);
     }
 }
 
@@ -204,7 +210,6 @@ static void ui_event_WeightRebaseButton(lv_event_t* e){
     lv_event_code_t  event = lv_event_get_code(e);
     if(event == LV_EVENT_CLICKED){
         lv_label_set_text_fmt(ui_WeightValueLabel, "%.2f",0.00);
-        appController.set_current_weight(0.0f);
     }
 }
 
@@ -708,6 +713,33 @@ void ui_Screen1_screen_init(void)
 
     lv_label_set_text(ui_StepNoLabel, "Step No:");
 
+    // Time countdown
+    ui_TimeCountDownLabel = lv_label_create(ui_Screen1);
+
+    lv_obj_set_width(ui_TimeCountDownLabel, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_TimeCountDownLabel, LV_SIZE_CONTENT);
+
+    lv_obj_set_x(ui_TimeCountDownLabel, -100);
+    lv_obj_set_y(ui_TimeCountDownLabel, 72);
+
+    lv_obj_set_align(ui_TimeCountDownLabel, LV_ALIGN_CENTER);
+
+    lv_label_set_text(ui_TimeCountDownLabel, "Time: ");
+
+    // ui_TimeCountDownValueLabel
+
+    ui_TimeCountDownValueLabel = lv_label_create(ui_Screen1);
+
+    lv_obj_set_width(ui_TimeCountDownValueLabel, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_TimeCountDownValueLabel, LV_SIZE_CONTENT);
+
+    lv_obj_set_x(ui_TimeCountDownValueLabel, -50);
+    lv_obj_set_y(ui_TimeCountDownValueLabel, 72);
+
+    lv_obj_set_align(ui_TimeCountDownValueLabel, LV_ALIGN_CENTER);
+
+    lv_label_set_text(ui_TimeCountDownValueLabel, "32 s");
+
     // ui_WeightValueLabel2
 
     ui_WeightValueLabel2 = lv_label_create(ui_Screen1);
@@ -730,7 +762,7 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_height(ui_TemperatureValueLabel2, LV_SIZE_CONTENT);
 
     lv_obj_set_x(ui_TemperatureValueLabel2, 103);
-    lv_obj_set_y(ui_TemperatureValueLabel2, 76);
+    lv_obj_set_y(ui_TemperatureValueLabel2, 72);
 
     lv_obj_set_align(ui_TemperatureValueLabel2, LV_ALIGN_CENTER);
 

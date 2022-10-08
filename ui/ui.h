@@ -62,8 +62,8 @@ extern lv_obj_t * ui_kgSymbolLabel;
 extern lv_obj_t * ui_DegreesSymbolLabel2;
 extern lv_obj_t * ui_NextStepButton;
 extern lv_obj_t * ui_NextStepButtonLabel;
-
-
+extern lv_obj_t * ui_TimeCountDownLabel;
+extern lv_obj_t * ui_TimeCountDownValueLabel;
 void ui_init(void);
 
 #ifdef __cplusplus
