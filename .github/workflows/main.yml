@@ -3,6 +3,8 @@ name: Build FYP-Software application
 on:
   pull_request:
   push:
+    branches:
+      - main
 
 jobs:
   build-with-cli2:
