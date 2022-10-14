@@ -6,12 +6,19 @@
 #include "DS1820.h"
 #include "HX711.h"
 #include "AppController.h"
-#include "EthernetController.h"
+
+#include <deque>
+#include <string>
+#define MAX_LOGS 100
 
 extern Servo servo;
 extern LA_T8 laT8;
 extern AppController appController;
 extern DS1820 ds18b20;
 extern HX711 hx711;
-extern EthernetController ethernetController;
+/*MQTT*/
+extern std::deque<const char*> logs;
+template<typename ... Args>
+extern void log( const std::string& format, Args ... args );
+
 #endif
