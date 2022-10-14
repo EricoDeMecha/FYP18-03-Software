@@ -1,10 +1,9 @@
 name: Build FYP-Software application
 
 on:
-  pull_request:
   push:
-    branches:
-      - ethernet
+    tags:
+      - "v*"
 jobs:
   build-with-cli2:
     container:
@@ -32,7 +31,6 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
             repo_token: "${{ secrets.GITHUB_TOKEN }}"
-            automatic_release_tag: "latest"
             prerelease: false
             title: "Releases"
             files: |
