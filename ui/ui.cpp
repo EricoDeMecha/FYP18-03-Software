@@ -6,6 +6,7 @@
 #include "ui.h"
 #include "ui_helpers.h"
 #include "../src/globals.h"
+#include <numeric>
 
 ///////////////////// VARIABLES ////////////////////
 lv_obj_t * ui_Home;
@@ -74,24 +75,7 @@ static int t_steps = 0;
 static bool switched = true;
 static bool is_home_screen= true;
 static int current_time  = 0;
-static const char* term_text = "\n"
-                               "void lv_ex_label_1(void)\n"
-                               "{\n"
-                               "    lv_obj_t * label1 = lv_label_create(lv_scr_act(), NULL);\n"
-                               "    lv_label_set_long_mode(label1, LV_LABEL_LONG_BREAK);     /*Break the long lines*/\n"
-                               "    lv_label_set_recolor(label1, true);                      /*Enable re-coloring by commands in the text*/\n"
-                               "    lv_label_set_align(label1, LV_LABEL_ALIGN_CENTER);       /*Center aligned lines*/\n"
-                               "    lv_label_set_text(label1, \"#0000ff Re-color# #ff00ff words# #ff0000 of a# label \"\n"
-                               "                              \"and  wrap long text automatically.\");\n"
-                               "    lv_obj_set_width(label1, 150);\n"
-                               "    lv_obj_align(label1, NULL, LV_ALIGN_CENTER, 0, -30);\n"
-                               "\n"
-                               "    lv_obj_t * label2 = lv_label_create(lv_scr_act(), NULL);\n"
-                               "    lv_label_set_long_mode(label2, LV_LABEL_LONG_SROLL_CIRC);     /*Circular scroll*/\n"
-                               "    lv_obj_set_width(label2, 150);\n"
-                               "    lv_label_set_text(label2, \"It is a circularly scrolling text. \");\n"
-                               "    lv_obj_align(label2, NULL, LV_ALIGN_CENTER, 0, 30);\n"
-                               "}";
+static std::string output_string = "";
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
 static void home_update_task();
 static void screen1_update_task();
@@ -130,7 +114,8 @@ static void screen1_update_task(){
 }
 
 static void screen2_update_task(){
-    lv_label_set_text(ui_TermLabel, term_text);
+    output_string = std::accumulate(logs.begin(), logs.end(), std::string(""));
+    lv_label_set_text(ui_TermLabel, output_string.c_str());
 }
 ///////////////////// ANIMATIONS ////////////////////
 
@@ -934,7 +919,6 @@ void ui_Screen2_screen_init(void){
     lv_win_add_title(ui_TermWin, "Ethernet Logs");
 
     ui_TermLabel = lv_label_create(ui_TermWin);
-    lv_label_set_text(ui_TermLabel, term_text);
 }
 
 void ui_init(void)

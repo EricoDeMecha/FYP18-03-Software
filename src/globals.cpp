@@ -9,4 +9,4 @@ AppController appController;
 
 bool connected_mqtt = false;
 
-std::deque<const char*> logs(MAX_LOGS);
+std::deque<std::string> logs(MAX_LOGS);

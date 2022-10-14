@@ -17,5 +17,5 @@ extern DS1820 ds18b20;
 extern HX711 hx711;
 /*MQTT*/
 extern bool connected_mqtt;
-extern std::deque<const char*> logs;
+extern std::deque<std::string> logs;
 #endif

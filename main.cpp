@@ -261,5 +261,5 @@ void log( const std::string& format, Args ... args ){
     if(logs.size() == MAX_LOGS){
         logs.pop_front();
     }
-    logs.emplace_back(buf.get());
+    logs.emplace_back(std::string( buf.get(), buf.get() + size - 1 ));
 }
