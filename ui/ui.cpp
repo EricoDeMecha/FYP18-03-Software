@@ -56,6 +56,9 @@ lv_obj_t * ui_NextStepButton;
 lv_obj_t * ui_NextStepButtonLabel;
 lv_obj_t * ui_TimeCountDownLabel;
 lv_obj_t * ui_TimeCountDownValueLabel;
+lv_obj_t * ui_Screen2;
+lv_obj_t * ui_TermWin;
+lv_obj_t * ui_TermLabel;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
@@ -71,9 +74,28 @@ static int t_steps = 0;
 static bool switched = true;
 static bool is_home_screen= true;
 static int current_time  = 0;
+static const char* term_text = "\n"
+                               "void lv_ex_label_1(void)\n"
+                               "{\n"
+                               "    lv_obj_t * label1 = lv_label_create(lv_scr_act(), NULL);\n"
+                               "    lv_label_set_long_mode(label1, LV_LABEL_LONG_BREAK);     /*Break the long lines*/\n"
+                               "    lv_label_set_recolor(label1, true);                      /*Enable re-coloring by commands in the text*/\n"
+                               "    lv_label_set_align(label1, LV_LABEL_ALIGN_CENTER);       /*Center aligned lines*/\n"
+                               "    lv_label_set_text(label1, \"#0000ff Re-color# #ff00ff words# #ff0000 of a# label \"\n"
+                               "                              \"and  wrap long text automatically.\");\n"
+                               "    lv_obj_set_width(label1, 150);\n"
+                               "    lv_obj_align(label1, NULL, LV_ALIGN_CENTER, 0, -30);\n"
+                               "\n"
+                               "    lv_obj_t * label2 = lv_label_create(lv_scr_act(), NULL);\n"
+                               "    lv_label_set_long_mode(label2, LV_LABEL_LONG_SROLL_CIRC);     /*Circular scroll*/\n"
+                               "    lv_obj_set_width(label2, 150);\n"
+                               "    lv_label_set_text(label2, \"It is a circularly scrolling text. \");\n"
+                               "    lv_obj_align(label2, NULL, LV_ALIGN_CENTER, 0, 30);\n"
+                               "}";
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
 static void home_update_task();
 static void screen1_update_task();
+static void screen2_update_task();
 ///////////////////// USER DEFINED FUNCTIONS ////////////////////
 
 static void home_update_task(){
@@ -107,6 +129,9 @@ static void screen1_update_task(){
     }
 }
 
+static void screen2_update_task(){
+    lv_label_set_text(ui_TermLabel, term_text);
+}
 ///////////////////// ANIMATIONS ////////////////////
 
 ///////////////////// FUNCTIONS ////////////////////
@@ -147,7 +172,7 @@ static void ui_event_StartButton(lv_event_t * e)
         t_steps = (int) lv_slider_get_value(ui_TimeSlider);
         appController.fill_up_param_vecs(n_steps, t_steps);
         // start experiment - home  the actuators
-//        appController.servo_position(servo, 0);
+        appController.servo_position(servo, 0);
         appController.lat8_operate(laT8, false);
         // disable home screen button
         _ui_state_modify(ui_BackButton, LV_STATE_DISABLED, _UI_MODIFY_FLAG_ADD);
@@ -738,7 +763,7 @@ void ui_Screen1_screen_init(void)
 
     lv_obj_set_align(ui_TimeCountDownValueLabel, LV_ALIGN_CENTER);
 
-    lv_label_set_text(ui_TimeCountDownValueLabel, "32 s");
+    lv_label_set_text(ui_TimeCountDownValueLabel, "0 s");
 
     // ui_WeightValueLabel2
 
@@ -901,6 +926,17 @@ void ui_Screen1_screen_init(void)
 
 }
 
+void ui_Screen2_screen_init(void){
+    ui_Screen2 = lv_obj_create(NULL);
+    lv_obj_clear_flag(ui_Screen2, LV_OBJ_FLAG_SCROLLABLE);
+
+    ui_TermWin = lv_win_create(ui_Screen2, NULL);
+    lv_win_add_title(ui_TermWin, "Ethernet Logs");
+
+    ui_TermLabel = lv_label_create(ui_TermWin);
+    lv_label_set_text(ui_TermLabel, term_text);
+}
+
 void ui_init(void)
 {
     lv_disp_t * dispp = lv_disp_get_default();
@@ -909,8 +945,10 @@ void ui_init(void)
     lv_disp_set_theme(dispp, theme);
     ui_Home_screen_init();
     ui_Screen1_screen_init();
+    ui_Screen2_screen_init();
     ui_Home->user_data = (void*) home_update_task;
     ui_Screen1->user_data = (void*) screen1_update_task;
-    lv_disp_load_scr(ui_Home);
+    ui_Screen2->user_data = (void*) screen2_update_task;
+    lv_disp_load_scr(ui_Screen2);
 }
 

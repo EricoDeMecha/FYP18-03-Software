@@ -64,6 +64,10 @@ extern lv_obj_t * ui_NextStepButton;
 extern lv_obj_t * ui_NextStepButtonLabel;
 extern lv_obj_t * ui_TimeCountDownLabel;
 extern lv_obj_t * ui_TimeCountDownValueLabel;
+
+extern lv_obj_t * ui_Screen2;
+extern lv_obj_t * ui_TermWin;
+extern lv_obj_t * ui_TermLabel;
 void ui_init(void);
 
 #ifdef __cplusplus
