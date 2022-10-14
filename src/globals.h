@@ -8,7 +8,6 @@
 #include "AppController.h"
 
 #include <deque>
-#include <string>
 #define MAX_LOGS 100
 
 extern Servo servo;
@@ -17,8 +16,6 @@ extern AppController appController;
 extern DS1820 ds18b20;
 extern HX711 hx711;
 /*MQTT*/
+extern bool connected_mqtt;
 extern std::deque<const char*> logs;
-template<typename ... Args>
-extern void log( const std::string& format, Args ... args );
-
 #endif

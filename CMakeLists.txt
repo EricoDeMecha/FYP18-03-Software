@@ -69,7 +69,6 @@ set(APP_SRCs
         src/DS1820.cpp
         src/HX711.cpp
         src/AppController.cpp
-        src/EthernetController.cpp
         )
 
 add_executable(${APP_TARGET}
