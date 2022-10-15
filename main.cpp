@@ -57,8 +57,6 @@ Thread  lvgl_thread(osPriorityLow, 8192);// thread for LVGL GUI handling
 /*
  * MQTT
  * */
-
-#define WATCHDOG_TIMEOUT_MS 9999
 #define NET_TIMEOUT_MS 2000
 #define MQTT_KEEPALIVE 20
 #define LOOP_SLEEP_MS 99
@@ -73,10 +71,6 @@ char* topic_cmnd = "cmnd/controller/";
 char* topic_pub = "stat/controller/";
 bool connected_net = false;
 
-Watchdog &wd = Watchdog::get_instance();
-Ticker tick_every1s;
-Ticker tick_every500ms;
-
 bool networking_init(EthernetInterface &wiz);
 bool mqtt_init(MQTTNetwork &mqttNet, MQTT::Client<MQTTNetwork, Countdown> &client);
 void message_handler(MQTT::MessageData& md);
@@ -85,21 +79,6 @@ bool publish_num(MQTT::Client<MQTTNetwork, Countdown> &client, char* topic, int 
 template<typename ... Args>
 void log( const std::string& format, Args ... args );
 // tickers
-void every_second(){
-    uptime_sec++;
-    if(connected_mqtt){
-        led1 = !led1;
-        led2 = !led2;
-    }
-    wd.kick();
-}
-
-void every_500ms(){
-    if(connected_net && !connected_mqtt) {
-        led1 = !led1;
-        led2 = !led2;
-    }
-}
 
 int main(){
     printf("Mbed ScannerController\n");
@@ -130,17 +109,12 @@ int main(){
     hx711.powerUp();
 
     /*MQTT*/
-    wd.start(WATCHDOG_TIMEOUT_MS);
     EthernetInterface wiz(PB_14, PC_3, PB_13, PB_12, PA_3);
     MQTTNetwork mqttNetwork(&wiz);
     MQTT::Client<MQTTNetwork, Countdown> client(mqttNetwork, NET_TIMEOUT_MS);
 
-    tick_every500ms.attach(every_500ms, 0.5);
-    tick_every1s.attach(every_second, 1);
-
-    wd.kick();
-
     while(1) {
+#if 0
         if(!connected_net){
             led1 = !led1;
             led2 = !led2;
@@ -161,6 +135,8 @@ int main(){
             client.yield(LOOP_SLEEP_MS);
         }
         ThisThread::sleep_for(LOOP_SLEEP_MS);
+#endif
+        ThisThread::sleep_for(200ms);
     }
 }
 
