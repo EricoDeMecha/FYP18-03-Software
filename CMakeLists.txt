@@ -22,7 +22,9 @@ include_directories(WIZnetInterface)
 include_directories(WIZnetInterface/Socket)
 include_directories(WIZnetInterface/arch/ext)
 include_directories(WIZnetInterface/arch/int)
-
+include_directories(EmbeddedProto/src)
+include_directories(eth_src)
+include_directories(logger)
 #set(MICROPY_DIR "dummy to force lvgl to use static ")
 add_subdirectory(lvgl)
 add_subdirectory(lvglDriver)
@@ -44,7 +46,11 @@ set(WIZNet_SRCs
         WIZnetInterface/arch/ext/W5500.cpp
         WIZnetInterface/arch/int/W7500x_toe.cpp
         )
-
+set(PROTO_SRCs
+        EmbeddedProto/src/Fields.cpp
+        EmbeddedProto/src/MessageInterface.cpp
+        EmbeddedProto/src/ReadBufferSection.cpp
+        )
 set(APP_SRCs
         src/globals.cpp
         src/globals.cpp
@@ -54,6 +60,8 @@ set(APP_SRCs
         src/DS1820.cpp
         src/HX711.cpp
         src/AppController.cpp
+        src/EthernetController.cpp
+        logger/log.cpp
         )
 
 add_executable(${APP_TARGET}
@@ -61,6 +69,7 @@ add_executable(${APP_TARGET}
         ${UI_SRCs}
         ${APP_SRCs}
         ${WIZNet_SRCs}
+        ${PROTO_SRCs}
         )
 
 target_link_libraries(${APP_TARGET}

@@ -5,10 +5,7 @@
 #include "lvglDriver/LVGLInputDriverBase.h"
 
 #include "ui/ui.h"
-#include "src/globals.h"
-
-
-#include "EthernetInterface.h"
+#include "src/EthernetController.h"
 
 using rtos::Kernel::Clock;
 
@@ -49,20 +46,10 @@ typedef void (*lv_update_cb_t)(bool);
 
 Thread  lvgl_thread(osPriorityLow, 8192);// thread for LVGL GUI handling
 
-
 /*
- * Ethernethttps://github.com/Embedded-AMS/EmbeddedProto_Example_Mbed_to_server.git
+ * Ethernet
  * */
-#define NET_TIMEOUT_MS 2000
-
-unsigned long uptime_sec = 0;
-uint8_t mac_addr[6]={0x00, 0x00, 0x00, 0xBE, 0xEF,  0x99};
-bool connected_net = false;
-
-bool networking_init(EthernetInterface &wiz);
-template<typename ... Args>
-void log( const std::string& format, Args ... args );
-// tickers
+EthernetController eth;
 
 int main(){
     printf("Mbed ScannerController\n");
@@ -92,34 +79,10 @@ int main(){
     // hx711
     hx711.powerUp();
 
-    /*MQTT*/
-    EthernetInterface wiz(PC_12, PC_11, PC_10, PA_15, PC_7);
-
+    // Ethernet controller
+    eth.start();
+    eth.loop();
     while(1) {
         ThisThread::sleep_for(200ms);
     }
-}
-
-bool networking_init(EthernetInterface &wiz) {
-    log("%ld: Start networking...\n", uptime_sec);
-    // reset the w5500
-    wiz.init(mac_addr);
-    if (wiz.connect(NET_TIMEOUT_MS) != 0) {
-        log("%ld: DHCP failed :-(\n", uptime_sec);
-        return false;
-    }
-    log("%ld: IP: %s\n", uptime_sec, wiz.getIPAddress());
-    return true;
-}
-template<typename ... Args>
-void log( const std::string& format, Args ... args ){
-    int size_s = std::snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-    auto size = static_cast<size_t>( size_s );
-    std::unique_ptr<char[]> buf( new char[ size ] );
-    std::snprintf( buf.get(), size, format.c_str(), args ... );
-    // store
-    if(logs.size() == MAX_LOGS){
-        logs.pop_front();
-    }
-    logs.emplace_back(std::string( buf.get(), buf.get() + size - 1 ));
 }

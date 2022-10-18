@@ -6,6 +6,7 @@
 #include "ui.h"
 #include "ui_helpers.h"
 #include "../src/globals.h"
+#include "logger/log.h"
 #include <numeric>
 
 ///////////////////// VARIABLES ////////////////////
@@ -75,7 +76,6 @@ static int t_steps = 0;
 static bool switched = true;
 static bool is_home_screen= true;
 static int current_time  = 0;
-static std::string output_string = "";
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
 static void home_update_task();
 static void screen1_update_task();
@@ -114,8 +114,7 @@ static void screen1_update_task(){
 }
 
 static void screen2_update_task(){
-    output_string = std::accumulate(logs.begin(), logs.end(), std::string(""));
-    lv_label_set_text(ui_TermLabel, output_string.c_str());
+    lv_label_set_text(ui_TermLabel, retrieve_log());
 }
 ///////////////////// ANIMATIONS ////////////////////
 
