@@ -933,6 +933,6 @@ void ui_init(void)
     ui_Home->user_data = (void*) home_update_task;
     ui_Screen1->user_data = (void*) screen1_update_task;
     ui_Screen2->user_data = (void*) screen2_update_task;
-    lv_disp_load_scr(ui_Home);
+    lv_disp_load_scr(ui_Screen2);
 }
 

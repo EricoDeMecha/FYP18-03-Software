@@ -8,7 +8,7 @@
 #include "AppController.h"
 
 #include <deque>
-#define MAX_LOGS 100
+#define MAX_LOGS 13
 
 extern Servo servo;
 extern LA_T8 laT8;

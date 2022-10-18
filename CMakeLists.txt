@@ -22,9 +22,6 @@ include_directories(WIZnetInterface)
 include_directories(WIZnetInterface/Socket)
 include_directories(WIZnetInterface/arch/ext)
 include_directories(WIZnetInterface/arch/int)
-include_directories(MQTT)
-include_directories(MQTT/MQTTPacket)
-include_directories(MQTT/FP)
 
 #set(MICROPY_DIR "dummy to force lvgl to use static ")
 add_subdirectory(lvgl)
@@ -34,18 +31,6 @@ target_include_directories(lvglDriver INTERFACE lvgl)
 set(UI_SRCs
         ui/ui.cpp
         ui/ui_helpers.cpp)
-set(MQTT_SRCs
-        MQTT/MQTTPacket/MQTTConnectClient.c
-        MQTT/MQTTPacket/MQTTConnectServer.c
-        MQTT/MQTTPacket/MQTTDeserializePublish.c
-        MQTT/MQTTPacket/MQTTSerializePublish.c
-        MQTT/MQTTPacket/MQTTSubscribeClient.c
-        MQTT/MQTTPacket/MQTTSubscribeServer.c
-        MQTT/MQTTPacket/MQTTUnsubscribeClient.c
-        MQTT/MQTTPacket/MQTTUnsubscribeServer.c
-        MQTT/MQTTPacket/MQTTFormat.c
-        MQTT/MQTTPacket/MQTTPacket.c
-        )
 
 set(WIZNet_SRCs
         WIZnetInterface/EthernetInterface.cpp
@@ -75,7 +60,6 @@ add_executable(${APP_TARGET}
         main.cpp
         ${UI_SRCs}
         ${APP_SRCs}
-        ${MQTT_SRCs}
         ${WIZNet_SRCs}
         )
 
