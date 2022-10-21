@@ -5,13 +5,14 @@
 #include "LA_T8.h"
 #include "DS1820.h"
 #include "HX711.h"
+#include "Ethernet.h"
 #include "AppController.h"
-#include "EthernetInterface.h"
 
 extern Servo servo;
 extern LA_T8 laT8;
 extern AppController appController;
 extern DS1820 ds18b20;
 extern HX711 hx711;
-extern EthernetInterface wiz;
+extern Ethernet eth;
+
 #endif

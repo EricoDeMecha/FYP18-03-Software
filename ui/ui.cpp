@@ -3,11 +3,13 @@
 // LVGL VERSION: 8.2
 // PROJECT: fyp18032
 
+#include <algorithm>
+#include "stdio.h"
 #include "ui.h"
 #include "ui_helpers.h"
+#include "csplit.h"
 #include "../src/globals.h"
-#include "logger/log.h"
-#include <numeric>
+#include "../logger/log.h"
 
 ///////////////////// VARIABLES ////////////////////
 lv_obj_t * ui_Home;
@@ -59,9 +61,19 @@ lv_obj_t * ui_NextStepButtonLabel;
 lv_obj_t * ui_TimeCountDownLabel;
 lv_obj_t * ui_TimeCountDownValueLabel;
 lv_obj_t * ui_Screen2;
-lv_obj_t * ui_TermWin;
 lv_obj_t * ui_TermLabel;
-
+lv_obj_t * ui_NextButton1;
+lv_obj_t * ui_NextBtnLabel1;
+lv_obj_t * ui_BackButton1;
+lv_obj_t * ui_BackButtonLabel1;
+lv_obj_t * ui_ipTextArea;
+lv_obj_t * ui_ipColonLabel;
+lv_obj_t * ui_ipPortTextArea;
+lv_obj_t * ui_ipKeyboard;
+lv_obj_t * ui_connectBtn;
+lv_obj_t * ui_connectBtnLabel;
+lv_obj_t * ui_messageBox;
+lv_obj_t * ui_spinner;
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
     #error "LV_COLOR_DEPTH should be 16bit to match SquareLine Studio's settings"
@@ -75,7 +87,9 @@ static int n_steps = 0;
 static int t_steps = 0;
 static bool switched = true;
 static bool is_home_screen= true;
+static bool is_screen1_screen = true;
 static int current_time  = 0;
+
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
 static void home_update_task();
 static void screen1_update_task();
@@ -119,6 +133,50 @@ static void screen2_update_task(){
 ///////////////////// ANIMATIONS ////////////////////
 
 ///////////////////// FUNCTIONS ////////////////////
+
+
+static void split(const char* s,char* c, CSplitList_t* parts) {
+    char* temp = strdup(s);
+    CSplitError_t  err = csplit(parts, temp, c);
+    if(err != CSPLIT_SUCCESS){
+        free(temp);
+        return;
+    }
+    free(temp);
+}
+
+static bool validateIPv4(const char* IP) {
+    if (std::count(IP, (IP+strlen(IP)), '.') != 3) {
+        return false;
+    }
+    CSplitList_t* parts = csplit_init_list();
+    char* delim = ".";
+    split(IP, delim, parts);
+    for(int i = 0; i < parts->num_elems; i++){
+        char* part = csplit_get_fragment_at_index(parts, i);
+        if (part == NULL || strlen(part) > 3 || strlen(part) > 1 && part[0] == '0') {
+            return false;
+        }
+        if(!isdigit(*part)){
+            return false;
+        }
+        if (atoi(part) > 255) {
+            return false;
+        }
+    }
+    csplit_clear_list(parts);
+    return true;
+}
+
+static bool validatePort(const char* port){
+    if(port == NULL){
+        return false;
+    }
+    if(!isdigit(*port)){
+        return false;
+    }
+    return true;
+}
 static void ui_event_ValveArc(lv_event_t * e)
 {
     lv_event_code_t event = lv_event_get_code(e);
@@ -222,6 +280,67 @@ static void ui_event_WeightRebaseButton(lv_event_t* e){
     }
 }
 
+static void ui_event_NextButton1(lv_event_t* e){
+    lv_event_code_t event = lv_event_get_code(e);
+    if(event == LV_EVENT_CLICKED){
+        _ui_screen_change(ui_Screen2, LV_SCR_LOAD_ANIM_MOVE_LEFT, 500, 0);
+        is_screen1_screen = false;
+    }
+}
+
+static void ui_event_BackButton1(lv_event_t * e)
+{
+    lv_event_code_t event = lv_event_get_code(e);
+    if(event == LV_EVENT_CLICKED) {
+        _ui_screen_change(ui_Screen1, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 500, 0);
+        is_screen1_screen = true;
+    }
+}
+
+static void ui_ipTextArea_cb(lv_event_t* e){
+    lv_event_code_t event = lv_event_get_code(e);
+    if(event == LV_EVENT_FOCUSED){
+        _ui_flag_modify(ui_ipKeyboard, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+        lv_keyboard_set_textarea(ui_ipKeyboard, ui_ipTextArea);
+        return;
+    } else if(event == LV_EVENT_DEFOCUSED){
+        _ui_flag_modify(ui_ipKeyboard, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        lv_keyboard_set_textarea(ui_ipKeyboard, NULL);
+    }
+}
+
+static void ui_ipPortTextArea_cb(lv_event_t* e){
+    lv_event_code_t event = lv_event_get_code(e);
+    if(event == LV_EVENT_FOCUSED){
+        _ui_flag_modify(ui_ipKeyboard, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+        lv_keyboard_set_textarea(ui_ipKeyboard, ui_ipPortTextArea);
+    }else if(event  == LV_EVENT_DEFOCUSED){
+        _ui_flag_modify(ui_ipKeyboard, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        lv_keyboard_set_textarea(ui_ipKeyboard, NULL);
+    }
+}
+
+static void ui_connectBtn_cb(lv_event_t* e){
+    const char* ip_text = lv_textarea_get_text(ui_ipTextArea);
+    bool is_ip_valid = validateIPv4(ip_text);
+    const char* ip_port = lv_textarea_get_text(ui_ipPortTextArea);
+    bool is_port_valid = validatePort(ip_port);
+    if(!is_ip_valid || !is_port_valid){
+        // raise an alert message
+        //  ui_messageBox;
+        ui_messageBox = lv_msgbox_create(ui_Screen2, "Warning", "Invalid ip/port format", NULL, true);
+        lv_obj_set_align(ui_messageBox, LV_ALIGN_CENTER);
+        lv_obj_set_x(ui_messageBox, 0);
+        lv_obj_set_y(ui_messageBox, 0);
+        return;
+    }else{
+        // spinbox
+        ui_spinner = lv_spinner_create(ui_Screen2, 1000, 100);
+        lv_obj_set_align(ui_spinner, LV_ALIGN_CENTER);
+        _ui_state_modify(ui_connectBtn, LV_STATE_DISABLED, _UI_MODIFY_FLAG_ADD);
+        _ui_state_modify(ui_BackButton1, LV_STATE_DISABLED, _UI_MODIFY_FLAG_ADD);
+    }
+}
 ///////////////////// SCREENS ////////////////////
 void ui_Home_screen_init(void)
 {
@@ -908,16 +1027,138 @@ void ui_Screen1_screen_init(void)
 
     lv_label_set_text(ui_DegreesSymbolLabel2, "°C");
 
+    // ui_NextButton1
+
+    ui_NextButton1 = lv_btn_create(ui_Screen1);
+
+    lv_obj_set_width(ui_NextButton1, 56);
+    lv_obj_set_height(ui_NextButton1, 23);
+
+    lv_obj_set_x(ui_NextButton1, 129);
+    lv_obj_set_y(ui_NextButton1, -103);
+
+    lv_obj_set_align(ui_NextButton1, LV_ALIGN_CENTER);
+
+    lv_obj_add_flag(ui_NextButton1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_NextButton1, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_add_event_cb(ui_NextButton1, ui_event_NextButton1, LV_EVENT_ALL, NULL);
+
+    // ui_NextBtnLabel1
+
+    ui_NextBtnLabel1 = lv_label_create(ui_NextButton1);
+
+    lv_obj_set_width(ui_NextBtnLabel1, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_NextBtnLabel1, LV_SIZE_CONTENT);
+
+    lv_obj_set_x(ui_NextBtnLabel1, 0);
+    lv_obj_set_y(ui_NextBtnLabel1, 0);
+
+    lv_obj_set_align(ui_NextBtnLabel1, LV_ALIGN_CENTER);
+
+    lv_label_set_text(ui_NextBtnLabel1, "Next");
+
 }
 
 void ui_Screen2_screen_init(void){
     ui_Screen2 = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_Screen2, LV_OBJ_FLAG_SCROLLABLE);
+    // term label
+    ui_TermLabel = lv_label_create(ui_Screen2);
 
-    ui_TermWin = lv_win_create(ui_Screen2, NULL);
-    lv_win_add_title(ui_TermWin, "Ethernet Logs");
+    lv_obj_set_width(ui_TermLabel, 310);
+    lv_obj_set_height(ui_TermLabel, 210);
 
-    ui_TermLabel = lv_label_create(ui_TermWin);
+    lv_obj_set_x(ui_TermLabel, 0);
+    lv_obj_set_y(ui_TermLabel, 20);
+
+    lv_obj_set_align(ui_TermLabel, LV_ALIGN_BOTTOM_LEFT);
+
+    // ui_BackButton
+
+    ui_BackButton1 = lv_btn_create(ui_Screen2);
+
+    lv_obj_set_width(ui_BackButton1, 61);
+    lv_obj_set_height(ui_BackButton1, 25);
+
+    lv_obj_set_x(ui_BackButton1, -126);
+    lv_obj_set_y(ui_BackButton1, 102);
+
+    lv_obj_set_align(ui_BackButton1, LV_ALIGN_CENTER);
+
+    lv_obj_add_flag(ui_BackButton1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_BackButton1, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_add_event_cb(ui_BackButton1, ui_event_BackButton1, LV_EVENT_ALL, NULL);
+
+    // ui_BackButtonLabel
+
+    ui_BackButtonLabel1 = lv_label_create(ui_BackButton1);
+
+    lv_obj_set_width(ui_BackButtonLabel1, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_BackButtonLabel1, LV_SIZE_CONTENT);
+
+    lv_obj_set_x(ui_BackButtonLabel1, 0);
+    lv_obj_set_y(ui_BackButtonLabel1, -1);
+
+    lv_obj_set_align(ui_BackButtonLabel1, LV_ALIGN_CENTER);
+
+    lv_label_set_text(ui_BackButtonLabel1, "Back");
+
+    // ui_ipTextArea
+    ui_ipTextArea = lv_textarea_create(ui_Screen2);
+    lv_textarea_set_placeholder_text(ui_ipTextArea ,"192.168.88.83");
+    lv_textarea_set_one_line(ui_ipTextArea, true);
+    lv_obj_align(ui_ipTextArea, LV_ALIGN_TOP_LEFT, 10, 0);
+    lv_obj_set_size(ui_ipTextArea, 120, 30);
+    lv_obj_add_event_cb(ui_ipTextArea, ui_ipTextArea_cb, LV_EVENT_ALL, NULL);
+    ui_ipKeyboard = lv_keyboard_create(ui_Screen2);
+    lv_keyboard_set_mode(ui_ipKeyboard, LV_KEYBOARD_MODE_NUMBER);
+    _ui_flag_modify(ui_ipKeyboard, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+    // ui_ip_dot1
+    ui_ipColonLabel = lv_label_create(ui_Screen2);
+    lv_obj_set_width(ui_ipColonLabel, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_ipColonLabel, LV_SIZE_CONTENT);
+    lv_obj_align(ui_ipColonLabel, LV_ALIGN_TOP_LEFT, 132, 8);
+    lv_label_set_text(ui_ipColonLabel, ":");
+
+    // ui_ipPortTextArea
+    ui_ipPortTextArea = lv_textarea_create(ui_Screen2);
+    lv_textarea_set_placeholder_text(ui_ipPortTextArea ,"1883");
+    lv_textarea_set_one_line(ui_ipPortTextArea, true);
+    lv_obj_align(ui_ipPortTextArea, LV_ALIGN_TOP_LEFT, 137, 0);
+    lv_obj_set_size(ui_ipPortTextArea, 60, 30);
+    lv_obj_add_event_cb(ui_ipPortTextArea, ui_ipPortTextArea_cb, LV_EVENT_ALL, NULL);
+
+    // ui_connectBtn
+
+    ui_connectBtn = lv_btn_create(ui_Screen2);
+
+    lv_obj_set_width(ui_connectBtn, 76);
+    lv_obj_set_height(ui_connectBtn, 28);
+
+    lv_obj_set_x(ui_connectBtn, 118);
+    lv_obj_set_y(ui_connectBtn, -103);
+
+    lv_obj_set_align(ui_connectBtn, LV_ALIGN_CENTER);
+
+    lv_obj_add_flag(ui_connectBtn, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_connectBtn, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_add_event_cb(ui_connectBtn, ui_connectBtn_cb, LV_EVENT_CLICKED, NULL);
+    // ui_connectBtnLabel
+
+    ui_connectBtnLabel = lv_label_create(ui_connectBtn);
+
+    lv_obj_set_width(ui_connectBtnLabel, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_connectBtnLabel, LV_SIZE_CONTENT);
+
+    lv_obj_set_x(ui_connectBtnLabel, 0);
+    lv_obj_set_y(ui_connectBtnLabel, 0);
+
+    lv_obj_set_align(ui_connectBtnLabel, LV_ALIGN_CENTER);
+
+    lv_label_set_text(ui_connectBtnLabel, "connect");
 }
 
 void ui_init(void)
@@ -932,6 +1173,6 @@ void ui_init(void)
     ui_Home->user_data = (void*) home_update_task;
     ui_Screen1->user_data = (void*) screen1_update_task;
     ui_Screen2->user_data = (void*) screen2_update_task;
-    lv_disp_load_scr(ui_Screen2);
+    lv_disp_load_scr(ui_Home);
 }
 

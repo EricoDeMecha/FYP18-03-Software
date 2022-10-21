@@ -9,6 +9,8 @@
 #include "LA_T8.h"
 #include "HX711.h"
 #include "DS1820.h"
+#include "Ethernet.h"
+#include "eth_messages.h"
 #include <vector>
 #include <algorithm>
 
@@ -46,6 +48,11 @@ public:
     void next_step(Servo& servo , DS1820& ds18b20, LA_T8& laT8, HX711& hx711);
     void stop_experiment(Servo& servo, LA_T8& laT8);
     int get_current_time() const { return current_time; }
+    // ethernet
+    void eth_maintain(Ethernet& eth_ctrl);
+    void eth_send(Ethernet& eth_ctrl);
+    void eth_receive(Ethernet& eth_ctrl);
+    void set_data(Ethernet& eth_ctrl);
     ~AppController()=default;
 private:
     Thread appThread;
@@ -55,6 +62,8 @@ private:
     void read_weight(HX711& hx711);
     // ds18b20
     void read_temperature(DS1820& ds18b20);
+    // ethernet
+    void send_dummy_data(Ethernet& eth_ctrl);
 private:
     bool is_weight_set{};
     bool is_temp_set{};
@@ -64,9 +73,8 @@ private:
     float current_temperature{};
     int current_step{};
     int current_time{};
+    bool is_sock_data_received{};
 };
-
-// mqtt implementations
 
 
 #endif //FYP1803_SOFTWARE_APPCONTROLLER_H

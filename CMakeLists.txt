@@ -51,8 +51,9 @@ set(PROTO_SRCs
         EmbeddedProto/src/MessageInterface.cpp
         EmbeddedProto/src/ReadBufferSection.cpp
         )
+set(LOG_SRCs
+        logger/log.cpp)
 set(APP_SRCs
-        src/globals.cpp
         src/globals.cpp
         src/Servo.cpp
         src/LA_T8.cpp
@@ -60,12 +61,12 @@ set(APP_SRCs
         src/DS1820.cpp
         src/HX711.cpp
         src/AppController.cpp
-        src/EthernetController.cpp
-        logger/log.cpp
+        src/Ethernet.cpp
         )
 
 add_executable(${APP_TARGET}
         main.cpp
+        ${LOG_SRCs}
         ${UI_SRCs}
         ${APP_SRCs}
         ${WIZNet_SRCs}

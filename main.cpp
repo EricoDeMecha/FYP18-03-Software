@@ -5,7 +5,7 @@
 #include "lvglDriver/LVGLInputDriverBase.h"
 
 #include "ui/ui.h"
-#include "src/EthernetController.h"
+#include "src/globals.h"
 
 using rtos::Kernel::Clock;
 
@@ -46,11 +46,6 @@ typedef void (*lv_update_cb_t)(bool);
 
 Thread  lvgl_thread(osPriorityLow, 8192);// thread for LVGL GUI handling
 
-/*
- * Ethernet
- * */
-EthernetController eth;
-
 int main(){
     printf("Mbed ScannerController\n");
     printf("Hello from "  MBED_STRINGIFY(TARGET_NAME) "\n");
@@ -78,11 +73,13 @@ int main(){
     ds18b20.begin();
     // hx711
     hx711.powerUp();
+    // ethernet
+    eth.network_init();
+    eth.socket_connect();
 
-    // Ethernet controller
-    eth.start();
-    eth.loop();
     while(1) {
+        led1 = !led1;
+        led2 = !led2;
         ThisThread::sleep_for(200ms);
     }
 }
