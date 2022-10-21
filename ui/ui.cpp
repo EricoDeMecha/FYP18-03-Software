@@ -169,10 +169,7 @@ static bool validateIPv4(const char* IP) {
 }
 
 static bool validatePort(const char* port){
-    if(port == NULL){
-        return false;
-    }
-    if(!isdigit(*port)){
+    if(port == NULL || !isdigit(*port)){
         return false;
     }
     return true;
