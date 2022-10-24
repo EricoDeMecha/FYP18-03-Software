@@ -68,14 +68,13 @@ int main(){
     lvgl_thread.start(lvglThreadFn);
     /*APP INITs*/
     // servo
-    servo.attach(SERVO_POS_MIN);// Attach and enable the motor
+    servo.attach(SERVO_MIN_DEGREE);// Attach and enable the motor
     // start the temperature conversion
     ds18b20.begin();
     // hx711
     hx711.powerUp();
     // ethernet
     eth.network_init();
-    eth.socket_connect();
 
     while(1) {
         led1 = !led1;

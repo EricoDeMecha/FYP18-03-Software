@@ -103,18 +103,19 @@ void AppController::stop_experiment(Servo &servo, LA_T8 &laT8) {
     current_step = 0;
 }
 
-void AppController::eth_maintain(Ethernet& eth_ctrl) {
-    appEvents.call(callback(&eth_ctrl, &Ethernet::maintain_connection));
+void AppController::eth_maintain(Ethernet& eth_ctrl, const char* host, int port) {
+    if(host != nullptr)
+        appEvents.call(callback(&eth_ctrl, &Ethernet::maintain_connection),host, port);
 }
 
 void AppController::eth_send(Ethernet& eth_ctrl) {
-    if(eth_ctrl.get_sock_conn_flag()){
+    if(eth_ctrl.is_connected()){
         appEvents.call(callback(&eth_ctrl, &Ethernet::send_status));
     }
 }
 
 void AppController::eth_receive(Ethernet& eth_ctrl) {
-    if(eth_ctrl.get_sock_conn_flag()){
+    if(eth_ctrl.is_connected()){
         appEvents.call(callback(&eth_ctrl, &Ethernet::read_status));
         is_sock_data_received = true;
     }

@@ -25,4 +25,6 @@ void log( const std::string& format, Args ... args ){
     }
     logs.emplace_back(std::string( buf.get(), buf.get() + size - 1 ));
 }
+
+#define LOG(...) log(__VA_ARGS__)
 #endif

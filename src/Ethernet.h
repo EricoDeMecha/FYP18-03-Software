@@ -15,8 +15,6 @@
 #include "TCPSocketConnection.h"
 
 #define NET_TIMEOUT_MS 200
-#define HOST "192.168.88.83"
-#define PORT 1883
 #define BUFFER_SIZE 50
 
 class Ethernet {
@@ -24,17 +22,18 @@ public:
     Ethernet(PinName mosi, PinName miso, PinName sclk, PinName cs, PinName rst);
     ~Ethernet()=default;
     void network_init();
-    void socket_connect();
+    void socket_connect(const char* host, int port);
     void disconnect();
-    void send_status();
-    void read_status();
-    bool get_net_conn_flag() const { return is_net_connected; }
-    bool get_sock_conn_flag() const { return is_sock_connected; }
-    void maintain_connection();
+    bool is_connected() const { return is_net_connected && is_sock_connected ;}
+    const char* get_ip_address(){ return wiz.getIPAddress(); }
+    int get_port() {return socket.get_port();}
+    void maintain_connection(const char* host, int port);
     // status wrappers
     void st_set_temperature(float& temperature){ status.set_temperature(temperature); }
     void st_set_windspeed(float& wind_speed){ status.set_windspeed(wind_speed); }
     void st_set_humidity(float& humidity){ status.set_humidity(humidity);}
+    void send_status();
+    void read_status();
 private:
     EthernetInterface wiz;
     uint8_t mac_addr[6]={0x00, 0x00, 0x00, 0xBE, 0xEF,  0x99};

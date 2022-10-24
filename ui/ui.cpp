@@ -89,7 +89,11 @@ static bool switched = true;
 static bool is_home_screen= true;
 static bool is_screen1_screen = true;
 static int current_time  = 0;
-
+static const char* ip_text = NULL;
+static const char* ip_port = NULL;
+static int g_port = 0;
+static bool is_ip_valid;
+static bool is_port_valid;
 ///////////////////// USER DECLARED FUNCTIONS ////////////////////
 static void home_update_task();
 static void screen1_update_task();
@@ -112,22 +116,33 @@ static void home_update_task(){
 }
 
 static void screen1_update_task(){
-    // update the time countdown label
-    lv_label_set_text_fmt(ui_TimeCountDownValueLabel, "%d s", (current_time < 0 ? 0: ((current_time--)/1000)));
-    // n_steps and t_steps are set now
-    if(appController.get_weight_flag()){
-        lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", appController.get_current_weight());
-        appController.set_weight_flag(false);
-        // increment the step
-        lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", appController.get_current_step());
-    }
-    if(appController.get_temp_flag()){
-        lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", appController.get_current_temperature());
-        appController.set_temp_flag(false);
+    if(is_screen1_screen){
+        // update the time countdown label
+        lv_label_set_text_fmt(ui_TimeCountDownValueLabel, "%d s", (current_time < 0 ? 0: ((current_time--)/1000)));
+        // n_steps and t_steps are set now
+        if(appController.get_weight_flag()){
+            lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", appController.get_current_weight());
+            appController.set_weight_flag(false);
+            // increment the step
+            lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", appController.get_current_step());
+        }
+        if(appController.get_temp_flag()){
+            lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", appController.get_current_temperature());
+            appController.set_temp_flag(false);
+        }
     }
 }
 
 static void screen2_update_task(){
+    if(is_screen1_screen || is_home_screen){
+       return;
+    }
+    if(!eth.is_connected()){
+//        _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+        appController.eth_maintain(eth, ip_text, g_port);
+    }else{
+//        _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+    }
     lv_label_set_text(ui_TermLabel, retrieve_log());
 }
 ///////////////////// ANIMATIONS ////////////////////
@@ -318,10 +333,10 @@ static void ui_ipPortTextArea_cb(lv_event_t* e){
 }
 
 static void ui_connectBtn_cb(lv_event_t* e){
-    const char* ip_text = lv_textarea_get_text(ui_ipTextArea);
-    bool is_ip_valid = validateIPv4(ip_text);
-    const char* ip_port = lv_textarea_get_text(ui_ipPortTextArea);
-    bool is_port_valid = validatePort(ip_port);
+    ip_text = lv_textarea_get_text(ui_ipTextArea);
+    is_ip_valid = validateIPv4(ip_text);
+    ip_port = lv_textarea_get_text(ui_ipPortTextArea);
+    is_port_valid = validatePort(ip_port);
     if(!is_ip_valid || !is_port_valid){
         // raise an alert message
         //  ui_messageBox;
@@ -334,8 +349,11 @@ static void ui_connectBtn_cb(lv_event_t* e){
         // spinbox
         ui_spinner = lv_spinner_create(ui_Screen2, 1000, 100);
         lv_obj_set_align(ui_spinner, LV_ALIGN_CENTER);
-        _ui_state_modify(ui_connectBtn, LV_STATE_DISABLED, _UI_MODIFY_FLAG_ADD);
-        _ui_state_modify(ui_BackButton1, LV_STATE_DISABLED, _UI_MODIFY_FLAG_ADD);
+        g_port = atoi(ip_port);
+        // initiate ethernet connection maintenance
+        if(!eth.is_connected()){
+            appController.eth_maintain(eth, ip_text, g_port);
+        }
     }
 }
 ///////////////////// SCREENS ////////////////////

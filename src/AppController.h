@@ -49,7 +49,7 @@ public:
     void stop_experiment(Servo& servo, LA_T8& laT8);
     int get_current_time() const { return current_time; }
     // ethernet
-    void eth_maintain(Ethernet& eth_ctrl);
+    void eth_maintain(Ethernet& eth_ctrl, const char* host, int port);
     void eth_send(Ethernet& eth_ctrl);
     void eth_receive(Ethernet& eth_ctrl);
     void set_data(Ethernet& eth_ctrl);
