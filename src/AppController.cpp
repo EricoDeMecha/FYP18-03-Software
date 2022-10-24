@@ -104,8 +104,10 @@ void AppController::stop_experiment(Servo &servo, LA_T8 &laT8) {
 }
 
 void AppController::eth_maintain(Ethernet& eth_ctrl, const char* host, int port) {
-    if(host != nullptr)
+    if(host != nullptr){
         appEvents.call(callback(&eth_ctrl, &Ethernet::maintain_connection),host, port);
+        delay((chrono::milliseconds)(NET_TIMEOUT_MS*2));
+    }
 }
 
 void AppController::eth_send(Ethernet& eth_ctrl) {

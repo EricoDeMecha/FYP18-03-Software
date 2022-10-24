@@ -138,10 +138,12 @@ static void screen2_update_task(){
        return;
     }
     if(!eth.is_connected()){
-//        _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+        if(ui_spinner)
+            _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
         appController.eth_maintain(eth, ip_text, g_port);
     }else{
-//        _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        if(ui_spinner)
+            _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
     }
     lv_label_set_text(ui_TermLabel, retrieve_log());
 }
@@ -347,7 +349,7 @@ static void ui_connectBtn_cb(lv_event_t* e){
         return;
     }else{
         // spinbox
-        ui_spinner = lv_spinner_create(ui_Screen2, 1000, 100);
+        ui_spinner = lv_spinner_create(ui_Screen2, 800, 100);
         lv_obj_set_align(ui_spinner, LV_ALIGN_CENTER);
         g_port = atoi(ip_port);
         // initiate ethernet connection maintenance

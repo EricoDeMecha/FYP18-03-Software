@@ -13,40 +13,41 @@ void Ethernet::network_init() {
 #ifdef LOG
     LOG("%ld: Started networking\n", uptime_sec);
 #endif
-    wiz.init(mac_addr);
+    wiz.init(mac_addr, IP, IP_MASK, IP_GATEWAY);
     if(wiz.connect(NET_TIMEOUT_MS) != 0){
 #ifdef LOG
         LOG("%ld: DHCP Failed!!\n", uptime_sec);
 #endif
         is_net_connected = false;
-        uptime_sec++;
+        uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
         return;
     }
     is_net_connected  = true;
 #ifdef LOG
     LOG("IP: %s\n" ,wiz.getIPAddress());
 #endif
-    uptime_sec++;
+    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
 }
 
 void Ethernet::socket_connect(const char* host, int port) {
 #ifdef LOG
     LOG("%ld: Establishing TCP connection\n", uptime_sec);
+    LOG("%ld:%s->%s:%d\n", uptime_sec,wiz.getIPAddress(),host, port);
 #endif
     if(socket.connect(host, port, NET_TIMEOUT_MS) != 0){
 #ifdef LOG
         LOG("%ld: Failed to establish TCP connection!!\n", uptime_sec);
 #endif
         is_sock_connected = false;
-        uptime_sec++;
+        uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
         return;
     }
     is_sock_connected = true;
     socket.set_blocking(false);
 #ifdef LOG
-    LOG("%ld: Socked connected\n", uptime_sec);
+    LOG("%ld: Socket connected\n", uptime_sec);
 #endif
-    uptime_sec++;
+    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
 }
 
 void Ethernet::disconnect() {
@@ -57,7 +58,7 @@ void Ethernet::disconnect() {
 #ifdef LOG
     LOG("%ld: Disconnected\n", uptime_sec);
 #endif
-    uptime_sec++;
+    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
 }
 
 void Ethernet::send_status() {
@@ -85,7 +86,7 @@ void Ethernet::send_status() {
 }
 
 void Ethernet::maintain_connection(const char* host, int port) {
-    is_net_connected = (wiz.getIPAddress() != nullptr);
+    is_net_connected = (strcmp(wiz.getIPAddress(),"0.0.0.0") != 0);
     is_sock_connected = socket.is_connected();
     if(!is_net_connected){
         network_init();

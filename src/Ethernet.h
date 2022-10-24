@@ -14,8 +14,12 @@
 #include "WriteBufferFixedSize.h"
 #include "TCPSocketConnection.h"
 
-#define NET_TIMEOUT_MS 200
+#define NET_TIMEOUT_MS 99
 #define BUFFER_SIZE 50
+
+static const char*  IP = "192.168.1.15";
+static const char* IP_MASK =  "255.255.255.0";
+static const char* IP_GATEWAY =  "192.168.1.1";
 
 class Ethernet {
 public:
