@@ -46,10 +46,17 @@ set(WIZNet_SRCs
         WIZnetInterface/arch/ext/W5500.cpp
         WIZnetInterface/arch/int/W7500x_toe.cpp
         )
-set(PROTO_SRCs
-        EmbeddedProto/src/Fields.cpp
-        EmbeddedProto/src/MessageInterface.cpp
-        EmbeddedProto/src/ReadBufferSection.cpp
+set(MQTT_SRCs
+        MQTT/MQTTPacket/MQTTConnectClient.c
+        MQTT/MQTTPacket/MQTTConnectServer.c
+        MQTT/MQTTPacket/MQTTDeserializePublish.c
+        MQTT/MQTTPacket/MQTTFormat.c
+        MQTT/MQTTPacket/MQTTPacket.c
+        MQTT/MQTTPacket/MQTTSerializePublish.c
+        MQTT/MQTTPacket/MQTTSubscribeClient.c
+        MQTT/MQTTPacket/MQTTSubscribeServer.c
+        MQTT/MQTTPacket/MQTTUnsubscribeClient.c
+        MQTT/MQTTPacket/MQTTUnsubscribeServer.c
         )
 set(LOG_SRCs
         logger/log.cpp)
@@ -62,6 +69,7 @@ set(APP_SRCs
         src/HX711.cpp
         src/AppController.cpp
         src/Ethernet.cpp
+        src/Connection.cpp
         )
 
 add_executable(${APP_TARGET}
@@ -70,7 +78,7 @@ add_executable(${APP_TARGET}
         ${UI_SRCs}
         ${APP_SRCs}
         ${WIZNet_SRCs}
-        ${PROTO_SRCs}
+        ${MQTT_SRCs}
         )
 
 target_link_libraries(${APP_TARGET}

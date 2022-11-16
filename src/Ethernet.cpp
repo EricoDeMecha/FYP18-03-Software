@@ -9,45 +9,48 @@
 Ethernet::Ethernet(PinName mosi, PinName miso, PinName sclk, PinName cs, PinName rst):
         wiz(mosi, miso, sclk, cs, rst)  {}
 
-void Ethernet::network_init() {
+void Ethernet::network_init(const char* ip, const char* ip_mask, const char* ip_gateway) {
+    m_ip = ip;
+    m_ip_mask = ip_mask;
+    m_ip_gateway = ip_gateway;
 #ifdef LOG
-    LOG("%ld: Started networking\n", uptime_sec);
+    LOG("Started networking\n");
 #endif
-    wiz.init(mac_addr, IP, IP_MASK, IP_GATEWAY);
+    wiz.init(mac_addr, ip, ip_mask, ip_gateway);
     if(wiz.connect(NET_TIMEOUT_MS) != 0){
 #ifdef LOG
-        LOG("%ld: DHCP Failed!!\n", uptime_sec);
+        LOG("DHCP Failed!!\n");
 #endif
         is_net_connected = false;
-        uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
         return;
     }
     is_net_connected  = true;
 #ifdef LOG
     LOG("IP: %s\n" ,wiz.getIPAddress());
 #endif
-    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
 }
+void Ethernet::network_init() {
+    network_init(m_ip, m_ip_mask, m_ip_gateway);
+}
+
 
 void Ethernet::socket_connect(const char* host, int port) {
 #ifdef LOG
-    LOG("%ld: Establishing TCP connection\n", uptime_sec);
-    LOG("%ld:%s->%s:%d\n", uptime_sec,wiz.getIPAddress(),host, port);
+    LOG("%Establishing TCP connection\n");
+    LOG("%s->%s:%d\n",wiz.getIPAddress(),host, port);
 #endif
     if(socket.connect(host, port, NET_TIMEOUT_MS) != 0){
 #ifdef LOG
-        LOG("%ld: Failed to establish TCP connection!!\n", uptime_sec);
+        LOG("Failed to establish TCP connection!!\n");
 #endif
         is_sock_connected = false;
-        uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
         return;
     }
     is_sock_connected = true;
-    socket.set_blocking(false);
+//    socket.set_blocking(false);
 #ifdef LOG
-    LOG("%ld: Socket connected\n", uptime_sec);
+    LOG("Socket connected\n");
 #endif
-    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
 }
 
 void Ethernet::disconnect() {
@@ -56,34 +59,10 @@ void Ethernet::disconnect() {
     // Bring down the ethernet interface
     wiz.disconnect();
 #ifdef LOG
-    LOG("%ld: Disconnected\n", uptime_sec);
+    LOG("Disconnected\n");
 #endif
-    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
 }
 
-void Ethernet::send_status() {
-    uint32_t message_len_index = write_buffer.get_size();
-    write_buffer.push(0); //placeholder for message length
-
-    auto serialization_status = status.serialize(write_buffer);
-    if(::EmbeddedProto::Error::NO_ERRORS == serialization_status)
-    {
-        write_buffer.get_data()[message_len_index] = write_buffer.get_size()-1;
-        result = socket.send(reinterpret_cast<char *>(write_buffer.get_data()), (int) write_buffer.get_size());
-        if (result < 0) {
-#ifdef LOG
-            LOG("Error! socket.send() returned: %d\n", result);
-#endif
-            disconnect();
-        }
-        else{
-#ifdef LOG
-            LOG("Status sent\n");
-#endif
-        }
-    }
-    write_buffer.clear();
-}
 
 void Ethernet::maintain_connection(const char* host, int port) {
     is_net_connected = (strcmp(wiz.getIPAddress(),"0.0.0.0") != 0);
@@ -96,30 +75,5 @@ void Ethernet::maintain_connection(const char* host, int port) {
     }
 }
 
-void Ethernet::read_status() {
-    // read from socket
-    int bytes_read = socket.receive_all(reinterpret_cast<char *>(read_buffer.get_data()), BUFFER_SIZE);
-    if(bytes_read == -1){
-#ifdef LOG
-        LOG("Failed to read from socket!!\n");
-#endif
-        return;
-    }
-#ifdef LOG
-    LOG("Read from socket\n");
-#endif
-    read_buffer.set_bytes_written(bytes_read);
-    auto deserialize_result = status.deserialize(read_buffer);
-    if(deserialize_result != EmbeddedProto::Error::NO_ERRORS){
-#ifdef LOG
-        LOG("Failed to deserialize data!!\n");
-#endif
-        return;
-    }
-#ifdef LOG
-    LOG("Deserialized received data\n");
-#endif
-    read_buffer.clear();
-}
 
 /*#pragma pop_macro("LOG")*/

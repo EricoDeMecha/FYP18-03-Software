@@ -142,8 +142,9 @@ static void screen2_update_task(){
             _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
         appController.eth_maintain(eth, ip_text, g_port);
     }else{
-        if(ui_spinner)
+        if(ui_spinner){
             _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+        }
     }
     lv_label_set_text(ui_TermLabel, retrieve_log());
 }
@@ -307,6 +308,7 @@ static void ui_event_BackButton1(lv_event_t * e)
     lv_event_code_t event = lv_event_get_code(e);
     if(event == LV_EVENT_CLICKED) {
         _ui_screen_change(ui_Screen1, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 500, 0);
+        appController.release_connection(eth);
         is_screen1_screen = true;
     }
 }

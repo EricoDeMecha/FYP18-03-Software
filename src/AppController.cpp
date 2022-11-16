@@ -20,7 +20,7 @@ void AppController::fnAppController() {
 }
 
 void AppController::servo_position(Servo &servo, int angle) {
-    appEvents.call(callback(&servo, &Servo::write), angle);
+    appEvents.call(callback(&servo, &Servo::write), (-1 * angle));
 }
 
 void AppController::lat8_operate(LA_T8 &laT8, bool operate) {
@@ -110,31 +110,10 @@ void AppController::eth_maintain(Ethernet& eth_ctrl, const char* host, int port)
     }
 }
 
-void AppController::eth_send(Ethernet& eth_ctrl) {
+void AppController::release_connection(Ethernet &eth_ctrl) {
     if(eth_ctrl.is_connected()){
-        appEvents.call(callback(&eth_ctrl, &Ethernet::send_status));
+        appEvents.call(callback(&eth_ctrl, &Ethernet::disconnect));
     }
-}
-
-void AppController::eth_receive(Ethernet& eth_ctrl) {
-    if(eth_ctrl.is_connected()){
-        appEvents.call(callback(&eth_ctrl, &Ethernet::read_status));
-        is_sock_data_received = true;
-    }
-}
-
-void AppController::send_dummy_data(Ethernet &eth_ctrl) {
-    float temperature = 5.0 * ((float)rand() / (float) RAND_MAX) + 20.0; //random number between 20.0 and 25.0
-    float humidity = 30.0 * ((float)rand() / (float) RAND_MAX) + 50.0; //random number between 50.0 and 80.0
-    float windspeed = 20.0 * ((float)rand() / (float) RAND_MAX); //random number between 0 and 20.0
-
-    eth_ctrl.st_set_humidity(humidity);
-    eth_ctrl.st_set_temperature(temperature);
-    eth_ctrl.st_set_windspeed(windspeed);
-}
-
-void AppController::set_data(Ethernet& eth_ctrl) {
-    appEvents.call(callback(this, &AppController::send_dummy_data), eth_ctrl);
 }
 
 
