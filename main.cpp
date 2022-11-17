@@ -75,7 +75,8 @@ int main(){
     // hx711
     hx711.powerUp();
     // ethernet
-    eth.network_init();
+//    eth.network_init();
+    conn.network_init();
 
     while(1) {
         led1 = !led1;

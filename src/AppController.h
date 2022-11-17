@@ -9,7 +9,8 @@
 #include "LA_T8.h"
 #include "HX711.h"
 #include "DS1820.h"
-#include "Ethernet.h"
+//#include "Ethernet.h"
+#include "Connection.h"
 #include <vector>
 #include <algorithm>
 
@@ -47,9 +48,9 @@ public:
     void next_step(Servo& servo , DS1820& ds18b20, LA_T8& laT8, HX711& hx711);
     void stop_experiment(Servo& servo, LA_T8& laT8);
     int get_current_time() const { return current_time; }
-    // ethernet
-    void eth_maintain(Ethernet& eth_ctrl, const char* host, int port);
-    void release_connection(Ethernet& eth_ctrl);
+    // mqtt
+    void conn_maintain(Connection& connection, const char* host, int port);
+    void release_connection(Connection& connection);
     ~AppController()=default;
 private:
     Thread appThread;

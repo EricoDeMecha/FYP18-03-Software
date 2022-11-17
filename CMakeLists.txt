@@ -22,8 +22,9 @@ include_directories(WIZnetInterface)
 include_directories(WIZnetInterface/Socket)
 include_directories(WIZnetInterface/arch/ext)
 include_directories(WIZnetInterface/arch/int)
-include_directories(EmbeddedProto/src)
-include_directories(eth_src)
+
+include_directories(MQTT/MQTTPacket)
+include_directories(MQTT/FP)
 include_directories(logger)
 #set(MICROPY_DIR "dummy to force lvgl to use static ")
 add_subdirectory(lvgl)
@@ -58,6 +59,7 @@ set(MQTT_SRCs
         MQTT/MQTTPacket/MQTTUnsubscribeClient.c
         MQTT/MQTTPacket/MQTTUnsubscribeServer.c
         )
+
 set(LOG_SRCs
         logger/log.cpp)
 set(APP_SRCs
@@ -68,7 +70,7 @@ set(APP_SRCs
         src/DS1820.cpp
         src/HX711.cpp
         src/AppController.cpp
-        src/Ethernet.cpp
+#        src/Ethernet.cpp
         src/Connection.cpp
         )
 

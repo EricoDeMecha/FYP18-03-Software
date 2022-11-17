@@ -6,7 +6,12 @@
 /*#pragma push_macro("LOG")
 #undef LOG*/
 
-Connection::Connection(PinName mosi, PinName miso, PinName sclk, PinName cs, PinName rst): wiz(mosi, miso, sclk, cs, rst) {}
+Connection::Connection(PinName mosi, PinName miso, PinName sclk, PinName cs, PinName rst):
+                                                    wiz(mosi, miso, sclk, cs, rst){
+    mqttNetwork = new MQTTNetwork(&wiz);
+    socket = new TCPSocketConnection();
+    client = new MQTT::Client<MQTTNetwork, Countdown>(*mqttNetwork);
+}
 
 void Connection::network_init() {
 #ifdef LOG
@@ -25,61 +30,72 @@ void Connection::network_init() {
     LOG("IP: %s\n" ,wiz.getIPAddress());
 #endif
 }
-void message_handler(MQTT::MessageData& md) {
-    // MQTT callback function
-    MQTT::Message &message = md.message;
-    char topic[md.topicName.lenstring.len + 1];
-    sprintf(topic, "%.*s", md.topicName.lenstring.len, md.topicName.lenstring.data);
-    char* payload = new char[message.payloadlen + 1];
-    sprintf(payload, "%.*s", message.payloadlen, (char*)message.payload);
-    // printf("%ld: DEBUG: Received: %s Msg: %s qos %d, retained %d, dup %d, packetid %d\n", uptime_sec, topic, payload, message.qos, message.retained, message.dup, message.id);
-    char* sub_topic = topic + strlen(topic_cmnd);  // find the last word of the topic (eg: cmnd/controller00/output2)
-}
 
-void Connection::mqtt_init(const char* server_ip, int port) {
-    mqttNetwork = new MQTTNetwork(&wiz);
-    client  = new MQTT::Client<MQTTNetwork, Countdown>(mqttNetwork, NET_TIMEOUT_MS);
+
+void Connection::mqtt_init() {
 #ifdef LOG
     LOG("Connecting to MQTT Broker....\n");
 #endif
-    if(mqttNetwork->connect(server_ip, port, NET_TIMEOUT_MS) != MQTT::SUCCESS){
-#ifdef LOG
-        LOG("Couldn't connect TCP socket to broker\n");
-#endif
-        return;
-    }
-#ifdef LOG
-    LOG("MQTT broker connected\n");
-#endif
-    MQTTPacket_connectData conn_data = MQTTPacket_connectData_initializer;
-    MQTTPacket_willOptions lwt = MQTTPacket_willOptions_initializer;
-    lwt.topicName.cstring = topic_lwt;
-    lwt.message.cstring = (char*)"0";
-    lwt.retained = true;
-    conn_data.willFlag = 1;
-    conn_data.will = lwt;
-    conn_data.MQTTVersion = 3;
-    conn_data.keepAliveInterval = MQTT_KEEPALIVE;
-    conn_data.clientID.cstring = (char*)"controller";
-    if(client->connect(conn_data) != MQTT::SUCCESS){
-#ifdef LOG
-        LOG("MQTT Client couldn't connect to broker\n");
-#endif
-        return;
-    }
+    MQTTPacket_connectData  conn_data = MQTTPacket_connectData_initializer;
+    conn_data.keepAliveInterval = 20;
+    conn_data.cleansession = 1;
+    conn_data.clientID.cstring = "mcu";
 
+    MQTT::connackData connack_data{};
+
+    if(client->connect(conn_data, connack_data) != 0){
 #ifdef LOG
-    LOG("Connected to broker %s \n", server_ip);
+        LOG("MQTT connection failed!\n");
 #endif
-    if(client->subscribe(topic_sub, MQTT::QOS1, message_handler) != MQTT::SUCCESS){
-#ifdef LOG
-        LOG(" MQTT Client couldn't subscribe to topic \n");
-#endif
+        is_mqtt_connected = false;
         return;
     }
 #ifdef LOG
-    LOG("Subscribed to %s\n", topic_sub);
+    LOG("MQTT connects OK\n");
 #endif
+    // TODO: publish and subscribe to topics
+}
+
+void Connection::maintain_connection(const char *broker_ip , int port) {
+    is_net_connected = (strcmp(wiz.getIPAddress(),"0.0.0.0") != 0);
+    is_sock_connected = socket->is_connected();
+    is_mqtt_connected = client->isConnected();
+    if(!is_net_connected){
+        network_init();
+    }
+    if(!is_sock_connected){
+        socket_connect(broker_ip, port);
+    }
+    if(!is_mqtt_connected){
+        mqtt_init();
+    }
+}
+
+void Connection::disconnect() {
+    client->disconnect();
+    socket->close();
+    // Bring down the ethernet interface
+    wiz.disconnect();
+#ifdef LOG
+    LOG("Disconnected\n");
+#endif
+}
+
+void Connection::socket_connect(const char* host, int port) {
+#ifdef  LOG
+    LOG("Initiating socket connection...\n");
+#endif
+    if(socket->connect(host, port, NET_TIMEOUT_MS) != 0){
+#ifdef  LOG
+        LOG("Failed to create TCP socket connection\n");
+#endif
+        is_sock_connected = false;
+    }else{
+#ifdef  LOG
+        LOG("TCP socket connected\n");
+#endif
+        is_sock_connected = true;
+    }
 }
 
 

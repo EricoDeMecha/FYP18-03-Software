@@ -103,17 +103,16 @@ void AppController::stop_experiment(Servo &servo, LA_T8 &laT8) {
     current_step = 0;
 }
 
-void AppController::eth_maintain(Ethernet& eth_ctrl, const char* host, int port) {
+void AppController::conn_maintain(Connection& connection, const char* host, int port) {
     if(host != nullptr){
-        appEvents.call(callback(&eth_ctrl, &Ethernet::maintain_connection),host, port);
+        appEvents.call(callback(&connection, &Connection::maintain_connection),host, port);
         delay((chrono::milliseconds)(NET_TIMEOUT_MS*2));
     }
 }
 
-void AppController::release_connection(Ethernet &eth_ctrl) {
-    if(eth_ctrl.is_connected()){
-        appEvents.call(callback(&eth_ctrl, &Ethernet::disconnect));
+void AppController::release_connection(Connection &connection) {
+    if(connection.is_connected()){
+        appEvents.call(callback(&connection, &Connection::disconnect));
     }
 }
-
 

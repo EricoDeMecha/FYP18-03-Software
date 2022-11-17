@@ -137,10 +137,10 @@ static void screen2_update_task(){
     if(is_screen1_screen || is_home_screen){
        return;
     }
-    if(!eth.is_connected()){
+    if(!conn.is_connected()){
         if(ui_spinner)
             _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
-        appController.eth_maintain(eth, ip_text, g_port);
+        appController.conn_maintain(conn, ip_text, g_port);
     }else{
         if(ui_spinner){
             _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
@@ -308,7 +308,7 @@ static void ui_event_BackButton1(lv_event_t * e)
     lv_event_code_t event = lv_event_get_code(e);
     if(event == LV_EVENT_CLICKED) {
         _ui_screen_change(ui_Screen1, LV_SCR_LOAD_ANIM_MOVE_RIGHT, 500, 0);
-        appController.release_connection(eth);
+        appController.release_connection(conn);
         is_screen1_screen = true;
     }
 }
@@ -355,8 +355,8 @@ static void ui_connectBtn_cb(lv_event_t* e){
         lv_obj_set_align(ui_spinner, LV_ALIGN_CENTER);
         g_port = atoi(ip_port);
         // initiate ethernet connection maintenance
-        if(!eth.is_connected()){
-            appController.eth_maintain(eth, ip_text, g_port);
+        if(!conn.is_connected()){
+            appController.conn_maintain(conn, ip_text, g_port);
         }
     }
 }
