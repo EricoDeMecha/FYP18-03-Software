@@ -39,7 +39,7 @@ void Connection::mqtt_init() {
     MQTTPacket_connectData  conn_data = MQTTPacket_connectData_initializer;
     conn_data.keepAliveInterval = 20;
     conn_data.cleansession = 1;
-    conn_data.clientID.cstring = "mcu";
+    conn_data.clientID.cstring = (char*)"black_f407ve";
 
     MQTT::connackData connack_data{};
 
