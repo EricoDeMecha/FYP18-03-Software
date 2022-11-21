@@ -66,11 +66,11 @@ set(APP_SRCs
 
 add_executable(${APP_TARGET}
         main.cpp
+        ${WIZNet_SRCs}
+        ${PROTO_SRCs}
         ${LOG_SRCs}
         ${UI_SRCs}
         ${APP_SRCs}
-        ${WIZNet_SRCs}
-        ${PROTO_SRCs}
         )
 
 target_link_libraries(${APP_TARGET}
