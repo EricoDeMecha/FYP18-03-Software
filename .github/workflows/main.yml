@@ -37,4 +37,4 @@ jobs:
             prerelease: false
             title: "Releases"
             files: |
-                cmake_build/${{ env.target }}/${{ env.profile }}/GCC_ARM/fyp18-03.bin
+                cmake_build/${{ env.target }}/develop/GCC_ARM/fyp18-03.bin
