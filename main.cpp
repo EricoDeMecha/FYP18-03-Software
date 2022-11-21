@@ -68,7 +68,7 @@ int main(){
     lvgl_thread.start(lvglThreadFn);
     /*APP INITs*/
     // servo
-    servo.attach(SERVO_MIN_DEGREE);// Attach and enable the motor
+    servo.attach(0);// Attach and enable the motor
     // start the temperature conversion
     ds18b20.begin();
     // hx711

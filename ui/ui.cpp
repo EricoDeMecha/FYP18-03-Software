@@ -146,6 +146,11 @@ static void screen2_update_task(){
             _ui_flag_modify(ui_spinner, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
     }
     lv_label_set_text(ui_TermLabel, retrieve_log());
+    if(eth.is_connected()){
+        appController.eth_receive(eth);
+        appController.process_data(eth, laT8,servo,ds18b20,hx711);
+        appController.eth_send(eth);
+    }
 }
 ///////////////////// ANIMATIONS ////////////////////
 

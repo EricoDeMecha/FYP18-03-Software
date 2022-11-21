@@ -4,6 +4,7 @@
 
 #include "AppController.h"
 
+
 AppController::AppController() :
         appThread(osPriorityAboveNormal, 4 * 1024, nullptr, "appController") {}
 
@@ -20,7 +21,8 @@ void AppController::fnAppController() {
 }
 
 void AppController::servo_position(Servo &servo, int angle) {
-    appEvents.call(callback(&servo, &Servo::write), angle);
+    // constrain angle between  (3 and 80)
+    appEvents.call(callback(&servo, &Servo::write), (-1 * angle));
 }
 
 void AppController::lat8_operate(LA_T8 &laT8, bool operate) {
@@ -112,29 +114,40 @@ void AppController::eth_maintain(Ethernet& eth_ctrl, const char* host, int port)
 
 void AppController::eth_send(Ethernet& eth_ctrl) {
     if(eth_ctrl.is_connected()){
-        appEvents.call(callback(&eth_ctrl, &Ethernet::send_status));
+        appEvents.call(callback(&eth_ctrl, &Ethernet::send_data));
     }
 }
 
 void AppController::eth_receive(Ethernet& eth_ctrl) {
     if(eth_ctrl.is_connected()){
-        appEvents.call(callback(&eth_ctrl, &Ethernet::read_status));
-        is_sock_data_received = true;
+        appEvents.call(callback(&eth_ctrl, &Ethernet::read_data));
     }
 }
 
-void AppController::send_dummy_data(Ethernet &eth_ctrl) {
-    float temperature = 5.0 * ((float)rand() / (float) RAND_MAX) + 20.0; //random number between 20.0 and 25.0
-    float humidity = 30.0 * ((float)rand() / (float) RAND_MAX) + 50.0; //random number between 50.0 and 80.0
-    float windspeed = 20.0 * ((float)rand() / (float) RAND_MAX); //random number between 0 and 20.0
-
-    eth_ctrl.st_set_humidity(humidity);
-    eth_ctrl.st_set_temperature(temperature);
-    eth_ctrl.st_set_windspeed(windspeed);
+void AppController::process_data(Ethernet &eth_ctrl, LA_T8& laT8, Servo& servo,DS1820& ds1820, HX711& hx711) {
+    if(eth_ctrl.command().start_btn()){
+        // fill up param vecs and reset positions
+        fill_up_param_vecs((int &) eth_ctrl.command().get_n_steps(), (int &) eth_ctrl.command().get_t_steps());
+        lat8_operate(laT8, false);
+        servo_position(servo, 0);
+    }
+    if(eth_ctrl.command().next_btn()){
+        if(!servo_angles.empty()) next_step(servo,ds1820,laT8, hx711);
+    }
+    if(eth_ctrl.command().reset_btn()){
+        // clear
+        servo_angles.clear();
+        vec_t_steps.clear();
+        lat8_operate(laT8, false);
+        servo_position(servo, 0);
+    }
+    // at all times
+    lat8_operate(laT8, eth_ctrl.command().diverter());
+    servo_position(servo, eth_ctrl.command().get_valve());
+    eth_ctrl.reply().set_temperature(current_temperature);
+    eth_ctrl.reply().set_weight(current_weight);
+    eth_ctrl.reply().set_current_step(current_step);
 }
 
-void AppController::set_data(Ethernet& eth_ctrl) {
-    appEvents.call(callback(this, &AppController::send_dummy_data), eth_ctrl);
-}
 
 

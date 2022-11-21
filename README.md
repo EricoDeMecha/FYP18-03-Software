@@ -43,7 +43,7 @@ as a submodule, and a header file representing a proto file is generated using t
 * Extract it in your path of choice e.g```~/protobuf/protoc-21.6/```
 * Run the EmbeddedProto setup script in its parent directory.
 ```bash
-cd EmbeddedProto && protoc setup.py --include ~/protobuf/protoc-21.6/include
+cd EmbeddedProto && python setup.py --include ~/protobuf/protoc-21.6/include
 ```
 * Generated the source of your proto file using the following
 ```bash

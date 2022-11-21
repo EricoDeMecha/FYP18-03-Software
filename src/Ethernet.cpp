@@ -11,43 +11,39 @@ Ethernet::Ethernet(PinName mosi, PinName miso, PinName sclk, PinName cs, PinName
 
 void Ethernet::network_init() {
 #ifdef LOG
-    LOG("%ld: Started networking\n", uptime_sec);
+    LOG("%zu: Started networking\n", ++uptime_sec);
 #endif
     wiz.init(mac_addr, IP, IP_MASK, IP_GATEWAY);
     if(wiz.connect(NET_TIMEOUT_MS) != 0){
 #ifdef LOG
-        LOG("%ld: DHCP Failed!!\n", uptime_sec);
+        LOG("%zu: DHCP Failed!!\n", ++uptime_sec);
 #endif
         is_net_connected = false;
-        uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
         return;
     }
     is_net_connected  = true;
 #ifdef LOG
     LOG("IP: %s\n" ,wiz.getIPAddress());
 #endif
-    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
 }
 
 void Ethernet::socket_connect(const char* host, int port) {
 #ifdef LOG
-    LOG("%ld: Establishing TCP connection\n", uptime_sec);
-    LOG("%ld:%s->%s:%d\n", uptime_sec,wiz.getIPAddress(),host, port);
+    LOG("%zu: Establishing TCP connection\n", ++uptime_sec);
+    LOG("%zu:%s->%s:%d\n", ++uptime_sec,wiz.getIPAddress(),host, port);
 #endif
     if(socket.connect(host, port, NET_TIMEOUT_MS) != 0){
 #ifdef LOG
-        LOG("%ld: Failed to establish TCP connection!!\n", uptime_sec);
+        LOG("%zu: Failed to establish TCP connection!!\n", ++uptime_sec);
 #endif
         is_sock_connected = false;
-        uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
         return;
     }
     is_sock_connected = true;
     socket.set_blocking(false);
 #ifdef LOG
-    LOG("%ld: Socket connected\n", uptime_sec);
+    LOG("%zu: Socket connected\n", ++uptime_sec);
 #endif
-    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
 }
 
 void Ethernet::disconnect() {
@@ -56,36 +52,13 @@ void Ethernet::disconnect() {
     // Bring down the ethernet interface
     wiz.disconnect();
 #ifdef LOG
-    LOG("%ld: Disconnected\n", uptime_sec);
+    LOG("%zu: Disconnected\n", ++uptime_sec);
 #endif
-    uptime_sec = uptime_sec > 99 ? 1: uptime_sec + 1;
-}
-
-void Ethernet::send_status() {
-    uint32_t message_len_index = write_buffer.get_size();
-    write_buffer.push(0); //placeholder for message length
-
-    auto serialization_status = status.serialize(write_buffer);
-    if(::EmbeddedProto::Error::NO_ERRORS == serialization_status)
-    {
-        write_buffer.get_data()[message_len_index] = write_buffer.get_size()-1;
-        result = socket.send(reinterpret_cast<char *>(write_buffer.get_data()), (int) write_buffer.get_size());
-        if (result < 0) {
-#ifdef LOG
-            LOG("Error! socket.send() returned: %d\n", result);
-#endif
-            disconnect();
-        }
-        else{
-#ifdef LOG
-            LOG("Status sent\n");
-#endif
-        }
-    }
-    write_buffer.clear();
 }
 
 void Ethernet::maintain_connection(const char* host, int port) {
+    // reset uptime
+    if(uptime_sec > 99){ uptime_sec = 0; }
     is_net_connected = (strcmp(wiz.getIPAddress(),"0.0.0.0") != 0);
     is_sock_connected = socket.is_connected();
     if(!is_net_connected){
@@ -96,28 +69,53 @@ void Ethernet::maintain_connection(const char* host, int port) {
     }
 }
 
-void Ethernet::read_status() {
+
+void Ethernet::send_data() {
+    uint32_t message_len_index = write_buffer.get_size();
+    write_buffer.push(0); //placeholder for message length
+
+    auto serialization_status = m_reply.serialize(write_buffer);
+    if(::EmbeddedProto::Error::NO_ERRORS == serialization_status){
+        write_buffer.get_data()[message_len_index] = write_buffer.get_size()-1;
+        result = socket.send(reinterpret_cast<char *>(write_buffer.get_data()), (int) write_buffer.get_size());
+        if (result < 0) {
+#ifdef LOG
+            LOG("%zu: Error! socket.send() returned: %d\n", ++uptime_sec, result);
+#endif
+//            disconnect();
+            socket.close();
+        }
+        else{
+#ifdef LOG
+            LOG("%zu: Status sent\n", ++uptime_sec);
+#endif
+        }
+    }
+    write_buffer.clear();
+}
+
+void Ethernet::read_data() {
     // read from socket
     int bytes_read = socket.receive_all(reinterpret_cast<char *>(read_buffer.get_data()), BUFFER_SIZE);
     if(bytes_read == -1){
 #ifdef LOG
-        LOG("Failed to read from socket!!\n");
+        LOG("%zu: Failed to read from socket!!\n", ++uptime_sec);
 #endif
         return;
     }
 #ifdef LOG
-    LOG("Read from socket\n");
+    LOG("%zu: Read from socket\n", ++uptime_sec);
 #endif
     read_buffer.set_bytes_written(bytes_read);
-    auto deserialize_result = status.deserialize(read_buffer);
+    auto deserialize_result = m_command.deserialize(read_buffer);
     if(deserialize_result != EmbeddedProto::Error::NO_ERRORS){
 #ifdef LOG
-        LOG("Failed to deserialize data!!\n");
+        LOG("%zu: Failed to deserialize data!!\n", ++uptime_sec);
 #endif
         return;
     }
 #ifdef LOG
-    LOG("Deserialized received data\n");
+    LOG("%zu: Deserialized received data\n", ++uptime_sec);
 #endif
     read_buffer.clear();
 }

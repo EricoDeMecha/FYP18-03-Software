@@ -10,7 +10,6 @@
 #include "HX711.h"
 #include "DS1820.h"
 #include "Ethernet.h"
-#include "eth_messages.h"
 #include <vector>
 #include <algorithm>
 
@@ -31,11 +30,9 @@ public:
     // weight
     void queue_weight(HX711 &hx711);
     float get_current_weight() const { return current_weight; }
-    void set_current_weight(float _current_weight){ current_weight = _current_weight; }
     // ds18b20
     void queue_temp(DS1820 &ds18b20);
     float get_current_temperature() const { return current_temperature; }
-    void set_current_temperature(float _current_temperature) { current_temperature = _current_temperature; }
     // getters and setters
     void set_weight_flag(bool set) { is_weight_set = set;}
     void set_temp_flag(bool set) { is_temp_set = set; }
@@ -52,7 +49,7 @@ public:
     void eth_maintain(Ethernet& eth_ctrl, const char* host, int port);
     void eth_send(Ethernet& eth_ctrl);
     void eth_receive(Ethernet& eth_ctrl);
-    void set_data(Ethernet& eth_ctrl);
+    void process_data(Ethernet &eth_ctrl, LA_T8& laT8, Servo& servo,DS1820& ds1820, HX711& hx711);
     ~AppController()=default;
 private:
     Thread appThread;
@@ -63,7 +60,6 @@ private:
     // ds18b20
     void read_temperature(DS1820& ds18b20);
     // ethernet
-    void send_dummy_data(Ethernet& eth_ctrl);
 private:
     bool is_weight_set{};
     bool is_temp_set{};
@@ -73,7 +69,6 @@ private:
     float current_temperature{};
     int current_step{};
     int current_time{};
-    bool is_sock_data_received{};
 };
 
 
