@@ -21,7 +21,9 @@ jobs:
         with:
           token: ${{ secrets.BORG_TOKEN }}
           submodules: recursive
-
+      -
+        name: Updating to Mbed6
+        run: sed -i -e 's/wait_ms/ThisThread::sleep_for/g' WIZnetInterface/arch/ext/W5500.cpp
       -
         name: build-fyp-application
         run: |
