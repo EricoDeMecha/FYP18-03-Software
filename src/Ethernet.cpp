@@ -14,7 +14,7 @@ void Ethernet::network_init() {
     LOG("%zu: Started networking\n", ++uptime_sec);
 #endif
     wiz.init(mac_addr, IP, IP_MASK, IP_GATEWAY);
-    if(wiz.connect(NET_TIMEOUT_MS) != 0){
+    if(wiz.connect() != 0){
 #ifdef LOG
         LOG("%zu: DHCP Failed!!\n", ++uptime_sec);
 #endif
@@ -32,7 +32,7 @@ void Ethernet::socket_connect(const char* host, int port) {
     LOG("%zu: Establishing TCP connection\n", ++uptime_sec);
     LOG("%zu:%s->%s:%d\n", ++uptime_sec,wiz.getIPAddress(),host, port);
 #endif
-    if(socket.connect(host, port, NET_TIMEOUT_MS) != 0){
+    if(socket.connect(host, port) != 0){
 #ifdef LOG
         LOG("%zu: Failed to establish TCP connection!!\n", ++uptime_sec);
 #endif

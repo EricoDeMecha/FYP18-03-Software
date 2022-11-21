@@ -22,12 +22,18 @@ jobs:
           token: ${{ secrets.BORG_TOKEN }}
           submodules: recursive
       -
-        name: deploy-and-build-fyp-application
+        name: deploy-fyp-application
         run: |
           set -e
           mbed deploy
+      -
+        name: upgrade-to-mbed-6
+        run: |
           sed -i -e 's/wait_ms(/ThisThread::sleep_for(/g' WIZnetInterface/arch/ext/W5500.cpp
           sed -i -e 's/wait(/ThisThread::sleep_for(/g' WIZnetInterface/arch/ext/W5500.cpp
+      -
+        name: build-fyp-application
+        run: |
           mbed-tools configure -t GCC_ARM -m ${{ env.target }}
           mbed-tools compile -t GCC_ARM -m ${{ env.target }}
       -
