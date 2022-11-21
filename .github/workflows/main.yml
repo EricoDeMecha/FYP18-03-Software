@@ -22,15 +22,18 @@ jobs:
           token: ${{ secrets.BORG_TOKEN }}
           submodules: recursive
       -
+        name: deploy-fyp-application
+        run: |
+          set -e
+          mbed deploy
+      -
         name: Updating to Mbed6
         run: sed -i -e 's/wait_ms/ThisThread::sleep_for/g' WIZnetInterface/arch/ext/W5500.cpp
       -
         name: build-fyp-application
         run: |
-          set -e
-          mbed deploy 
-          mbed-tools configure -t GCC_ARM -m ${{ env.target }}
-          mbed-tools compile -t GCC_ARM -m ${{ env.target }}
+            mbed-tools configure -t GCC_ARM -m ${{ env.target }}
+            mbed-tools compile -t GCC_ARM -m ${{ env.target }}
       -
         name: create_release
         uses: "marvinpinto/action-automatic-releases@latest"
