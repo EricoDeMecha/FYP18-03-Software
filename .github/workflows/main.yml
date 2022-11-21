@@ -13,7 +13,6 @@ jobs:
 
     env:
       target: STM32F407VE_BLACK
-      profile: release
 
     steps:
       -
@@ -28,7 +27,8 @@ jobs:
         run: |
           set -e
           mbed deploy 
-          mbed-tools compile -t GCC_ARM -m ${{ env.target }} --profile ${{ env.profile }}
+          mbed-tools configure -t GCC_ARM -m ${{ env.target }}
+          mbed-tools compile -t GCC_ARM -m ${{ env.target }}
       -
         name: create_release
         uses: "marvinpinto/action-automatic-releases@latest"
