@@ -10,12 +10,14 @@
 #include "HX711.h"
 #include "DS1820.h"
 #include "Ethernet.h"
+#include "log.h"
 #include <vector>
 #include <algorithm>
 
 #define FULL_VALVE_TURN 90.0
 #define T_MIN 5 // minimum time step
 #define ToMs(X) (X*1000)
+
 
 class AppController {
 public:
@@ -69,6 +71,8 @@ private:
     float current_temperature{};
     int current_step{};
     int current_time{};
+    int prev_servo_pos{};
+    bool prev_lat8{};
 };
 
 

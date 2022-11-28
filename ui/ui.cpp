@@ -705,7 +705,7 @@ void ui_Screen1_screen_init(void)
     // ui_StepsSlider
 
     ui_StepsSlider = lv_slider_create(ui_Screen1);
-    lv_slider_set_range(ui_StepsSlider, 0, 100);
+    lv_slider_set_range(ui_StepsSlider, 0, 15);
 
     lv_obj_set_width(ui_StepsSlider, 169);
     lv_obj_set_height(ui_StepsSlider, 18);
@@ -921,7 +921,7 @@ void ui_Screen1_screen_init(void)
     // ui_TimeSlider
 
     ui_TimeSlider = lv_slider_create(ui_Screen1);
-    lv_slider_set_range(ui_TimeSlider, 0, 100);
+    lv_slider_set_range(ui_TimeSlider, 0, 90);
 
     lv_obj_set_width(ui_TimeSlider, 170);
     lv_obj_set_height(ui_TimeSlider, 18);

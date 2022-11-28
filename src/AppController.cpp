@@ -64,6 +64,7 @@ void AppController::read_weight(HX711 &hx711) {
 
 void AppController::queue_weight(HX711 &hx711) {
     appEvents.call(callback(this, &AppController::read_weight), hx711);
+//    delay(500ms);// delay for 500ms to get established results.
 }
 
 void AppController::read_temperature(DS1820 &ds18b20) {
@@ -135,15 +136,19 @@ void AppController::process_data(Ethernet &eth_ctrl, LA_T8& laT8, Servo& servo,D
         if(!servo_angles.empty()) next_step(servo,ds1820,laT8, hx711);
     }
     if(eth_ctrl.command().reset_btn()){
-        // clear
         servo_angles.clear();
         vec_t_steps.clear();
         lat8_operate(laT8, false);
         servo_position(servo, 0);
     }
-    // at all times
-    lat8_operate(laT8, eth_ctrl.command().diverter());
-    servo_position(servo, eth_ctrl.command().get_valve());
+    if(eth_ctrl.command().diverter() != prev_lat8){
+        lat8_operate(laT8, eth_ctrl.command().diverter());
+        prev_lat8 = eth_ctrl.command().diverter();
+    }
+    if(eth_ctrl.command().get_valve() != prev_servo_pos){
+        servo_position(servo, eth_ctrl.command().get_valve());
+        prev_servo_pos = eth_ctrl.command().get_valve();
+    }
     eth_ctrl.reply().set_temperature(current_temperature);
     eth_ctrl.reply().set_weight(current_weight);
     eth_ctrl.reply().set_current_step(current_step);
