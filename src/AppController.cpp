@@ -42,7 +42,7 @@ void AppController::fill_up_param_vecs(int &n_steps, int &t_steps) {
     // servo_angles
     servo_angles.resize(n_steps, 0);
     int step_size = static_cast<int>(FULL_VALVE_TURN / n_steps);
-    std::generate(servo_angles.begin(), servo_angles.end(), [n = 0, &step_size]() mutable { return n += step_size; });
+    std::generate(servo_angles.begin(), servo_angles.end(), [n = 10, &step_size]() mutable { return n += step_size; });
     // lat8_actuation times
     vec_t_steps.resize(n_steps, 0);
     int t_size = static_cast<int>((ToMs(t_steps) - ToMs(T_MIN)) / n_steps);
@@ -64,7 +64,6 @@ void AppController::read_weight(HX711 &hx711) {
 
 void AppController::queue_weight(HX711 &hx711) {
     appEvents.call(callback(this, &AppController::read_weight), hx711);
-//    delay(500ms);// delay for 500ms to get established results.
 }
 
 void AppController::read_temperature(DS1820 &ds18b20) {
@@ -84,6 +83,7 @@ void AppController::next_step(Servo &servo, DS1820 &ds18b20, LA_T8 &laT8, HX711 
     if (static_cast<std::vector<int>::size_type>(current_step) >= (servo_angles.size())) {
         return;
     }
+    if(laT8.get_state()) { return; }
     servo_position(servo, servo_angles.at(current_step));
     // current time
     current_time = vec_t_steps.at(current_step);

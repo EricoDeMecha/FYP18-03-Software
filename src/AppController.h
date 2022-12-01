@@ -14,7 +14,7 @@
 #include <vector>
 #include <algorithm>
 
-#define FULL_VALVE_TURN 90.0
+#define FULL_VALVE_TURN 76.0
 #define T_MIN 5 // minimum time step
 #define ToMs(X) (X*1000)
 

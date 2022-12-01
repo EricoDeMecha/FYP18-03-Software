@@ -25,7 +25,7 @@ lv_obj_t * ui_WeightRebaseButton;
 lv_obj_t * ui_WeightRebaseLabel;
 lv_obj_t * ui_WeightHeaderLabel;
 lv_obj_t * ui_KgSymbolLabel;
-lv_obj_t * ui_ClosedLabel;
+lv_obj_t * ui_ClosedButton;
 lv_obj_t * ui_HomeTitle;
 lv_obj_t * ui_NextButton;
 lv_obj_t * ui_NextBtnLabel;
@@ -74,6 +74,7 @@ lv_obj_t * ui_connectBtn;
 lv_obj_t * ui_connectBtnLabel;
 lv_obj_t * ui_messageBox;
 lv_obj_t * ui_spinner;
+lv_obj_t * ui_ClosedButtonLabel;
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
     #error "LV_COLOR_DEPTH should be 16bit to match SquareLine Studio's settings"
@@ -120,16 +121,18 @@ static void screen1_update_task(){
         // update the time countdown label
         lv_label_set_text_fmt(ui_TimeCountDownValueLabel, "%d s", (current_time < 0 ? 0: ((current_time--)/1000)));
         // n_steps and t_steps are set now
+        appController.queue_weight(hx711);
         if(appController.get_weight_flag()){
             lv_label_set_text_fmt(ui_WeightValueLabel2, "%.2f", appController.get_current_weight());
             appController.set_weight_flag(false);
-            // increment the step
-            lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", appController.get_current_step());
         }
+        appController.queue_temp(ds18b20);
         if(appController.get_temp_flag()){
             lv_label_set_text_fmt(ui_TemperatureValueLabel2, "%.2f", appController.get_current_temperature());
             appController.set_temp_flag(false);
         }
+        // increment the step
+        lv_label_set_text_fmt(ui_StepNoValueLabel, "%d", appController.get_current_step());
     }
 }
 
@@ -155,7 +158,6 @@ static void screen2_update_task(){
 ///////////////////// ANIMATIONS ////////////////////
 
 ///////////////////// FUNCTIONS ////////////////////
-
 
 static void split(const char* s,char* c, CSplitList_t* parts) {
     char* temp = strdup(s);
@@ -229,6 +231,8 @@ static void ui_event_StartButton(lv_event_t * e)
     if(event == LV_EVENT_CLICKED) {
         _ui_state_modify(ui_TimeSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_ADD);
         _ui_state_modify(ui_StepsSlider, LV_STATE_DISABLED, _UI_MODIFY_STATE_ADD);
+        lv_arc_set_value(ui_ValveArc, 0);
+        lv_label_set_text_fmt(ui_ValveArcValueLabel, "%d", 0);
         n_steps = (int) lv_slider_get_value(ui_StepsSlider);
         t_steps = (int) lv_slider_get_value(ui_TimeSlider);
         appController.fill_up_param_vecs(n_steps, t_steps);
@@ -363,6 +367,13 @@ static void ui_connectBtn_cb(lv_event_t* e){
         }
     }
 }
+
+static void ui_event_closeButton(lv_event_t* e){
+    lv_obj_t * ta = lv_event_get_target(e);
+    lv_arc_set_value(ui_ValveArc, 0);
+    lv_label_set_text_fmt(ui_ValveArcValueLabel, "%d", 0);
+    appController.servo_position(servo, 0);// home the  servo motor
+}
 ///////////////////// SCREENS ////////////////////
 void ui_Home_screen_init(void)
 {
@@ -385,7 +396,7 @@ void ui_Home_screen_init(void)
 
     lv_obj_set_align(ui_ValveArc, LV_ALIGN_CENTER);
 
-    lv_arc_set_range(ui_ValveArc, 0, 90);
+    lv_arc_set_range(ui_ValveArc, 0, 76);
     lv_arc_set_bg_angles(ui_ValveArc, 120, 60);
 
     lv_obj_add_event_cb(ui_ValveArc, ui_event_ValveArc, LV_EVENT_ALL, NULL);
@@ -547,19 +558,35 @@ void ui_Home_screen_init(void)
 
     lv_label_set_text(ui_KgSymbolLabel, " kg");
 
-    // ui_ClosedLabel
+    // ui_ClosedButton
 
-    ui_ClosedLabel = lv_label_create(ui_Home);
+    ui_ClosedButton = lv_btn_create(ui_Home);
 
-    lv_obj_set_width(ui_ClosedLabel, LV_SIZE_CONTENT);
-    lv_obj_set_height(ui_ClosedLabel, LV_SIZE_CONTENT);
+    lv_obj_set_width(ui_ClosedButton, 76);
+    lv_obj_set_height(ui_ClosedButton, 28);
 
-    lv_obj_set_x(ui_ClosedLabel, -125);
-    lv_obj_set_y(ui_ClosedLabel, 101);
+    lv_obj_set_x(ui_ClosedButton, -115);
+    lv_obj_set_y(ui_ClosedButton, 101);
 
-    lv_obj_set_align(ui_ClosedLabel, LV_ALIGN_CENTER);
+    lv_obj_set_align(ui_ClosedButton, LV_ALIGN_CENTER);
 
-    lv_label_set_text(ui_ClosedLabel, "Closed");
+    lv_obj_add_flag(ui_ClosedButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(ui_ClosedButton, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_add_event_cb(ui_ClosedButton, ui_event_closeButton, LV_EVENT_CLICKED, NULL);
+    // ui_ClosedButtonLabel
+
+    ui_ClosedButtonLabel = lv_label_create(ui_ClosedButton);
+
+    lv_obj_set_width(ui_ClosedButtonLabel, LV_SIZE_CONTENT);
+    lv_obj_set_height(ui_ClosedButtonLabel, LV_SIZE_CONTENT);
+
+    lv_obj_set_x(ui_ClosedButtonLabel, 0);
+    lv_obj_set_y(ui_ClosedButtonLabel, 0);
+
+    lv_obj_set_align(ui_ClosedButtonLabel, LV_ALIGN_CENTER);
+
+    lv_label_set_text(ui_ClosedButtonLabel, "Rebase");
 
     // ui_HomeTitle
 

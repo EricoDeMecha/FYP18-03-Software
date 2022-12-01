@@ -38,9 +38,14 @@ SOFTWARE.
  *      #define SERVO_MAX_PULSE [pulse width for +90 degrees in us]
  */
 
-#define SERVO_REFRESH_RATE_US 20000 // 50Hz
+/*
+ * Configuration for DS3218mg Servo
+ *  #define MULTIPLIER 400
+ * */
+
+#define SERVO_REFRESH_RATE_US 20000 // 300Hz
 #define SERVO_MIN_PULSE 500
-#define SERVO_MAX_PULSE  2400
+#define SERVO_MAX_PULSE  2500
 
 
 #define SERVO_MIN_DEGREE  -90
