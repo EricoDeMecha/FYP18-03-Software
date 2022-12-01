@@ -17,16 +17,43 @@ set(LV_CONF_PATH
 
 add_subdirectory(${MBED_PATH})
 add_subdirectory(custom_targets)
-
+#ethernet includes
+include_directories(WIZnetInterface)
+include_directories(WIZnetInterface/Socket)
+include_directories(WIZnetInterface/arch/ext)
+include_directories(WIZnetInterface/arch/int)
+include_directories(EmbeddedProto/src)
+include_directories(proto_src)
+include_directories(logger)
 #set(MICROPY_DIR "dummy to force lvgl to use static ")
 add_subdirectory(lvgl)
 add_subdirectory(lvglDriver)
 target_include_directories(lvglDriver INTERFACE lvgl)
 
-set(SOURCES
-        src/globals.cpp
-        ui/ui_helpers.cpp
+set(UI_SRCs
         ui/ui.cpp
+        ui/ui_helpers.cpp)
+
+set(WIZNet_SRCs
+        WIZnetInterface/EthernetInterface.cpp
+        WIZnetInterface/Socket/DHCPClient.cpp
+        WIZnetInterface/Socket/DNSClient.cpp
+        WIZnetInterface/Socket/Endpoint.cpp
+        WIZnetInterface/Socket/Socket.cpp
+        WIZnetInterface/Socket/TCPSocketConnection.cpp
+        WIZnetInterface/Socket/TCPSocketServer.cpp
+        WIZnetInterface/Socket/UDPSocket.cpp
+        WIZnetInterface/arch/ext/W5500.cpp
+        WIZnetInterface/arch/int/W7500x_toe.cpp
+        )
+set(PROTO_SRCs
+        EmbeddedProto/src/Fields.cpp
+        EmbeddedProto/src/MessageInterface.cpp
+        EmbeddedProto/src/ReadBufferSection.cpp
+        )
+set(LOG_SRCs
+        logger/log.cpp)
+set(APP_SRCs
         src/globals.cpp
         src/Servo.cpp
         src/LA_T8.cpp
@@ -34,11 +61,16 @@ set(SOURCES
         src/DS1820.cpp
         src/HX711.cpp
         src/AppController.cpp
+        src/Ethernet.cpp
         )
 
 add_executable(${APP_TARGET}
         main.cpp
-        ${SOURCES}
+        ${WIZNet_SRCs}
+        ${PROTO_SRCs}
+        ${LOG_SRCs}
+        ${UI_SRCs}
+        ${APP_SRCs}
         )
 
 target_link_libraries(${APP_TARGET}

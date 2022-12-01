@@ -7,7 +7,6 @@
 #include "ui/ui.h"
 #include "src/globals.h"
 
-
 using rtos::Kernel::Clock;
 
 Ticker ticker_lvgl;
@@ -69,17 +68,17 @@ int main(){
     lvgl_thread.start(lvglThreadFn);
     /*APP INITs*/
     // servo
-    servo.attach(SERVO_POS_MIN);// Attach and enable the motor
+    servo.attach(0);// Attach and enable the motor
     // start the temperature conversion
     ds18b20.begin();
     // hx711
     hx711.powerUp();
+    // ethernet
+    eth.network_init();
 
     while(1) {
-        // blink LEDs for decor
         led1 = !led1;
         led2 = !led2;
         ThisThread::sleep_for(200ms);
     }
-
 }

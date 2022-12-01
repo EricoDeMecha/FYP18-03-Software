@@ -11,7 +11,9 @@ class LA_T8 {
 public:
     LA_T8(PinName in1, PinName in2);
     void operate(bool switch_val);
+    bool get_state() const { return _switch_val; }
 private:
+    bool _switch_val{};
     DigitalOut _in1;
     DigitalOut _in2;
 };

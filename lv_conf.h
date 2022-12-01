@@ -477,25 +477,25 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 #define LV_USE_IMGBTN       0
 
-#define LV_USE_KEYBOARD     0
+#define LV_USE_KEYBOARD     1
 
-#define LV_USE_LED          1
+#define LV_USE_LED          0
 
 #define LV_USE_LIST         0
 
-#define LV_USE_METER        1
+#define LV_USE_METER        0
 
-#define LV_USE_MSGBOX       0
+#define LV_USE_MSGBOX       1
 
-#define LV_USE_SPINBOX      1
+#define LV_USE_SPINBOX      0
 
-#define LV_USE_SPINNER      0
+#define LV_USE_SPINNER      1
 
 #define LV_USE_TABVIEW      0
 
 #define LV_USE_TILEVIEW     0
 
-#define LV_USE_WIN          1
+#define LV_USE_WIN          0
 
 #define LV_USE_SPAN         0
 #if LV_USE_SPAN

@@ -5,5 +5,7 @@ cmake-build-debug/
 lvgl/
 lvglDriver/
 custom_targets/
+mbed-mqtt/
 WIZnetInterface/
 MQTT/
+EmbeddedProto/

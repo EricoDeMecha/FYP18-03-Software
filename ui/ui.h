@@ -29,7 +29,7 @@ extern lv_obj_t * ui_WeightRebaseButton;
 extern lv_obj_t * ui_WeightRebaseLabel;
 extern lv_obj_t * ui_WeightHeaderLabel;
 extern lv_obj_t * ui_KgSymbolLabel;
-extern lv_obj_t * ui_ClosedLabel;
+extern lv_obj_t * ui_ClosedButton;
 extern lv_obj_t * ui_HomeTitle;
 extern lv_obj_t * ui_NextButton;
 extern lv_obj_t * ui_NextBtnLabel;
@@ -56,6 +56,8 @@ extern lv_obj_t * ui_TemperatureValueLabel2;
 extern lv_obj_t * ui_TimeSlider;
 extern lv_obj_t * ui_BackButton;
 extern lv_obj_t * ui_BackButtonLabel;
+extern lv_obj_t * ui_NextButton1;
+extern lv_obj_t * ui_NextBtnLabel1;
 extern lv_obj_t * ui_SecondsSymbolValueLabel;
 extern lv_obj_t * ui_StepNoValueLabel;
 extern lv_obj_t * ui_kgSymbolLabel;
@@ -64,6 +66,21 @@ extern lv_obj_t * ui_NextStepButton;
 extern lv_obj_t * ui_NextStepButtonLabel;
 extern lv_obj_t * ui_TimeCountDownLabel;
 extern lv_obj_t * ui_TimeCountDownValueLabel;
+
+extern lv_obj_t * ui_Screen2;
+extern lv_obj_t * ui_TermLabel;
+extern lv_obj_t * ui_BackButton1;
+extern lv_obj_t * ui_BackButtonLabel1;
+
+extern lv_obj_t * ui_ipTextArea;
+extern lv_obj_t * ui_ipColonLabel;
+extern lv_obj_t * ui_ipPortTextArea;
+extern lv_obj_t * ui_ipKeyboard;
+extern lv_obj_t * ui_connectBtn;
+extern lv_obj_t * ui_connectBtnLabel;
+extern lv_obj_t * ui_messageBox;
+extern lv_obj_t * ui_spinner;
+extern lv_obj_t * ui_ClosedButtonLabel;
 void ui_init(void);
 
 #ifdef __cplusplus
