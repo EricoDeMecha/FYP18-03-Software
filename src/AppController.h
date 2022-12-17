@@ -17,8 +17,8 @@
 #define FULL_VALVE_TURN 76.0
 #define T_MIN 5 // minimum time step
 #define ToMs(X) (X*1000)
-
-
+#define STARTING_ANGLE 30
+#define MAX_VALVE_OFFSET 10
 class AppController {
 public:
     AppController();

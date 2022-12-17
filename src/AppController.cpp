@@ -41,8 +41,11 @@ void AppController::fill_up_param_vecs(int &n_steps, int &t_steps) {
     }
     // servo_angles
     servo_angles.resize(n_steps, 0);
-    int step_size = static_cast<int>(FULL_VALVE_TURN / n_steps);
-    std::generate(servo_angles.begin(), servo_angles.end(), [n = 10, &step_size]() mutable { return n += step_size; });
+    int step_size = static_cast<int>(((FULL_VALVE_TURN-MAX_VALVE_OFFSET)-STARTING_ANGLE) / n_steps);
+    std::generate(servo_angles.begin(), servo_angles.end(), [n = STARTING_ANGLE, &step_size]() mutable {
+        n += step_size;
+        return n < (FULL_VALVE_TURN-MAX_VALVE_OFFSET) ? n : (FULL_VALVE_TURN-MAX_VALVE_OFFSET);
+    });
     // lat8_actuation times
     vec_t_steps.resize(n_steps, 0);
     int t_size = static_cast<int>((ToMs(t_steps) - ToMs(T_MIN)) / n_steps);
